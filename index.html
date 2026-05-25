@@ -104,27 +104,34 @@
 
     <!-- 分类卡片 -->
     <section class="px-4 mt-4">
-        <div class="grid grid-cols-3 gap-3">
-            <div class="flat-card p-4 text-center stat-tag" onclick="scrollToSection('table')">
-                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-file-signature text-green-600 text-lg"></i>
+        <div class="grid grid-cols-4 gap-2">
+            <div class="flat-card p-3 text-center stat-tag" onclick="scrollToSection('table')">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                    <i class="fas fa-file-signature text-green-600 text-sm"></i>
                 </div>
-                <div class="text-lg font-bold text-gray-800" id="signKm">0</div>
+                <div class="text-base font-bold text-gray-800" id="signKm">0</div>
                 <div class="text-xs text-gray-400">签订协议</div>
             </div>
-            <div class="flat-card p-4 text-center stat-tag" onclick="scrollToSection('table')">
-                <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-exchange-alt text-blue-600 text-lg"></i>
+            <div class="flat-card p-3 text-center stat-tag" onclick="scrollToSection('table')">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                    <i class="fas fa-exchange-alt text-blue-600 text-sm"></i>
                 </div>
-                <div class="text-lg font-bold text-gray-800" id="exchangeKm">0</div>
+                <div class="text-base font-bold text-gray-800" id="exchangeKm">0</div>
                 <div class="text-xs text-gray-400">置换部分</div>
             </div>
-            <div class="flat-card p-4 text-center stat-tag" onclick="scrollToSection('table')">
-                <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-plus-circle text-purple-600 text-lg"></i>
+            <div class="flat-card p-3 text-center stat-tag" onclick="scrollToSection('table')">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                    <i class="fas fa-check-circle text-purple-600 text-sm"></i>
                 </div>
-                <div class="text-lg font-bold text-gray-800" id="newKm">0</div>
-                <div class="text-xs text-gray-400">申请共享</div>
+                <div class="text-base font-bold text-gray-800" id="newKm">0</div>
+                <div class="text-xs text-gray-400">新增已确认</div>
+            </div>
+            <div class="flat-card p-3 text-center stat-tag" onclick="scrollToSection('table')">
+                <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                    <i class="fas fa-clock text-orange-600 text-sm"></i>
+                </div>
+                <div class="text-base font-bold text-gray-800" id="pendingKm">0</div>
+                <div class="text-xs text-gray-400">新增待确认</div>
             </div>
         </div>
     </section>
@@ -157,7 +164,7 @@
                             <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500">区县</th>
                             <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">签订协议</th>
                             <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">置换部分</th>
-                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">申请共享</th>
+                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">新增</th>
                             <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">合计</th>
                             <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">金额</th>
                         </tr>
@@ -174,28 +181,30 @@
 
 <script>
 // 完整数据：包含各分类的公里数和金额（金额单位：万元）
+// 新增已确认 = 新增共享部分（电信已确认）+ 历史181.2确认
 const data = {
     districts: [
-        {name: '蒙自', sign: 197.04, signAmt: 41.87, exchange: 693.27, exchangeAmt: 147.31, newApply: 76.55, newAmt: 16.27, totalKm: 966.86, amount: 205.45},
-        {name: '绿春', sign: 191.06, signAmt: 40.60, exchange: 187.03, exchangeAmt: 39.74, newApply: 235.40, newAmt: 15.85, totalKm: 613.49, amount: 96.19},
-        {name: '石屏', sign: 177.71, signAmt: 37.76, exchange: 175.10, exchangeAmt: 37.21, newApply: 64.34, newAmt: 13.67, totalKm: 417.15, amount: 88.64},
-        {name: '元阳', sign: 186.83, signAmt: 39.70, exchange: 110.50, exchangeAmt: 23.48, newApply: 72.18, newAmt: 10.16, totalKm: 369.51, amount: 73.34},
-        {name: '金平', sign: 245.98, signAmt: 52.31, exchange: 0, exchangeAmt: 0, newApply: 115.01, newAmt: 4.42, totalKm: 360.99, amount: 56.73},
-        {name: '弥勒', sign: 328.21, signAmt: 69.83, exchange: 0, exchangeAmt: 0, newApply: 34.19, newAmt: 7.26, totalKm: 362.40, amount: 77.09},
-        {name: '个旧', sign: 146.98, signAmt: 31.27, exchange: 0, exchangeAmt: 0, newApply: 105.85, newAmt: 13.78, totalKm: 252.83, amount: 45.05},
-        {name: '屏边', sign: 221.61, signAmt: 47.09, exchange: 0, exchangeAmt: 0, newApply: 17.10, newAmt: 3.10, totalKm: 238.71, amount: 50.19},
-        {name: '建水', sign: 135.43, signAmt: 28.87, exchange: 8.52, exchangeAmt: 1.81, newApply: 89.55, newAmt: 0.49, totalKm: 233.50, amount: 31.17},
-        {name: '河口', sign: 106.72, signAmt: 22.68, exchange: 39.00, exchangeAmt: 8.29, newApply: 157.61, newAmt: 28.66, totalKm: 303.33, amount: 59.63},
-        {name: '红河县', sign: 199.81, signAmt: 42.48, exchange: 92.67, exchangeAmt: 19.69, newApply: 0, newAmt: 0, totalKm: 292.48, amount: 62.17},
-        {name: '泸西', sign: 101.43, signAmt: 21.66, exchange: 69.50, exchangeAmt: 14.77, newApply: 13.90, newAmt: 2.95, totalKm: 184.83, amount: 39.38},
-        {name: '开远', sign: 169.61, signAmt: 36.04, exchange: 0, exchangeAmt: 0, newApply: 4.01, newAmt: 0.85, totalKm: 173.62, amount: 36.89},
-        // 总计：签订512.15 + 置换292.30 + 申请共享120.02 = 924.47
-        {name: '总计', sign: 2408.42, signAmt: 512.15, exchange: 1375.58, exchangeAmt: 292.30, newApply: 997.68, newAmt: 120.02, totalKm: 4781.68, amount: 924.47}
+        {name: '蒙自', sign: 197.04, signAmt: 41.87, exchange: 693.27, exchangeAmt: 147.31, newConfirmed: 636.21, newConfirmedAmt: 135.24, newPending: 51.82, totalKm: 1578.34, amount: 323.42},
+        {name: '绿春', sign: 191.06, signAmt: 40.60, exchange: 187.03, exchangeAmt: 39.74, newConfirmed: 276.25, newConfirmedAmt: 42.61, newPending: 0, totalKm: 654.34, amount: 122.95},
+        {name: '石屏', sign: 177.71, signAmt: 37.76, exchange: 175.10, exchangeAmt: 37.21, newConfirmed: 135.13, newConfirmedAmt: 28.71, newPending: 0, totalKm: 487.94, amount: 103.68},
+        {name: '元阳', sign: 186.83, signAmt: 39.70, exchange: 110.50, exchangeAmt: 23.48, newConfirmed: 139.32, newConfirmedAmt: 21.55, newPending: 28.21, totalKm: 464.86, amount: 84.73},
+        {name: '金平', sign: 245.98, signAmt: 52.31, exchange: 0, exchangeAmt: 0, newConfirmed: 244.65, newConfirmedAmt: 51.98, newPending: 4.50, totalKm: 495.13, amount: 104.29},
+        {name: '弥勒', sign: 328.21, signAmt: 69.83, exchange: 0, exchangeAmt: 0, newConfirmed: 275.54, newConfirmedAmt: 57.39, newPending: 3.10, totalKm: 606.85, amount: 127.22},
+        {name: '个旧', sign: 146.98, signAmt: 31.27, exchange: 0, exchangeAmt: 0, newConfirmed: 113.80, newConfirmedAmt: 23.86, newPending: 0, totalKm: 260.78, amount: 55.13},
+        {name: '屏边', sign: 221.61, signAmt: 47.09, exchange: 0, exchangeAmt: 0, newConfirmed: 106.20, newConfirmedAmt: 22.59, newPending: 147.15, totalKm: 474.96, amount: 69.68},
+        {name: '建水', sign: 135.43, signAmt: 28.87, exchange: 8.52, exchangeAmt: 1.81, newConfirmed: 226.38, newConfirmedAmt: 48.10, newPending: 4.67, totalKm: 375.00, amount: 78.78},
+        {name: '河口', sign: 106.72, signAmt: 22.68, exchange: 39.00, exchangeAmt: 8.29, newConfirmed: 153.94, newConfirmedAmt: 15.27, newPending: 0, totalKm: 299.66, amount: 46.24},
+        {name: '红河县', sign: 199.81, signAmt: 42.48, exchange: 92.67, exchangeAmt: 19.69, newConfirmed: 193.84, newConfirmedAmt: 25.70, newPending: 0, totalKm: 486.32, amount: 87.87},
+        {name: '泸西', sign: 101.43, signAmt: 21.66, exchange: 69.50, exchangeAmt: 14.77, newConfirmed: 114.68, newConfirmedAmt: 20.61, newPending: 0, totalKm: 285.61, amount: 57.04},
+        {name: '开远', sign: 169.61, signAmt: 36.04, exchange: 0, exchangeAmt: 0, newConfirmed: 175.00, newConfirmedAmt: 36.72, newPending: 0, totalKm: 344.61, amount: 72.76},
+        // 总计
+        {name: '总计', sign: 2408.42, signAmt: 512.15, exchange: 1375.58, exchangeAmt: 292.30, newConfirmed: 2675.20, newConfirmedAmt: 530.33, newPending: 239.45, totalKm: 6698.65, amount: 1334.78}
     ],
     types: [
         {name: '签订协议', km: 2408.42, amount: 512.15, color: '#22c55e'},
         {name: '置换部分', km: 1375.58, amount: 292.30, color: '#3b82f6'},
-        {name: '申请共享', km: 997.68, amount: 120.02, color: '#a855f7'}
+        {name: '新增已确认', km: 2675.20, amount: 530.33, color: '#a855f7'},
+        {name: '新增待确认', km: 239.45, amount: 0, color: '#f97316'}
     ]
 };
 
@@ -218,11 +227,12 @@ function animateNum(el, target, suffix = '') {
 
 // 初始化统计
 function initStats() {
-    animateNum(document.getElementById('totalKm'), 4781.68);
-    animateNum(document.getElementById('totalAmount'), 924.47);
+    animateNum(document.getElementById('totalKm'), 6698.65);
+    animateNum(document.getElementById('totalAmount'), 1334.78);
     animateNum(document.getElementById('signKm'), 2408.42);
     animateNum(document.getElementById('exchangeKm'), 1375.58);
-    animateNum(document.getElementById('newKm'), 997.68);
+    animateNum(document.getElementById('newKm'), 2675.20);
+    animateNum(document.getElementById('pendingKm'), 239.45);
 }
 
 // 渲染表格（带展开详情）
@@ -233,7 +243,8 @@ function renderTable() {
     data.districts.forEach((d, index) => {
         const isTotal = d.name === '总计';
         
-        // 主行
+        // 主行 - 显示新增已确认+待确认的合计
+        const newTotal = (d.newConfirmed || 0) + (d.newPending || 0);
         html += `<tr class="data-row ${isTotal ? 'bg-blue-50' : ''}" data-index="${index}" onclick="toggleDetail(${index})">
             <td class="px-3 py-2.5 ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-700'}">
                 ${!isTotal ? '<i class="fas fa-chevron-right text-xs text-gray-300 mr-1 expand-icon" id="icon-' + index + '"></i>' : ''}
@@ -241,25 +252,25 @@ function renderTable() {
             </td>
             <td class="px-3 py-2.5 text-right text-gray-500">${d.sign.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right text-gray-500">${d.exchange.toFixed(2)}</td>
-            <td class="px-3 py-2.5 text-right text-gray-500">${d.newApply.toFixed(2)}</td>
+            <td class="px-3 py-2.5 text-right text-gray-500">${newTotal.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-800'}">${d.totalKm.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-800'}">${d.amount.toFixed(2)}</td>
         </tr>`;
         
-        // 详情行
+        // 详情行 - 显示4个分类
         if (!isTotal) {
             html += `<tr class="detail-row" id="detail-${index}">
                 <td colspan="6" class="px-3 py-3">
                     <div class="detail-card bg-gray-50 rounded-xl p-4">
                         <div class="text-xs font-medium text-gray-500 mb-3">${d.name} - 详细情况</div>
-                        <div class="grid grid-cols-3 gap-3">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <!-- 签订详情 -->
                             <div class="bg-white rounded-lg p-3 border border-green-100">
                                 <div class="flex items-center mb-2">
                                     <div class="w-6 h-6 bg-green-100 rounded-md flex items-center justify-center mr-2">
                                         <i class="fas fa-file-signature text-green-600 text-xs"></i>
                                     </div>
-                                    <span class="text-xs font-medium text-green-700">签订合同</span>
+                                    <span class="text-xs font-medium text-green-700">签订协议</span>
                                 </div>
                                 <div class="text-lg font-bold text-gray-800">${d.sign.toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
                                 <div class="text-xs text-gray-400 mt-1">金额: <span class="text-green-600">${d.signAmt.toFixed(2)} 万元</span></div>
@@ -275,16 +286,27 @@ function renderTable() {
                                 <div class="text-lg font-bold text-gray-800">${d.exchange.toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
                                 <div class="text-xs text-gray-400 mt-1">金额: <span class="text-blue-600">${d.exchangeAmt.toFixed(2)} 万元</span></div>
                             </div>
-                            <!-- 申请共享详情 -->
+                            <!-- 新增已确认详情 -->
                             <div class="bg-white rounded-lg p-3 border border-purple-100">
                                 <div class="flex items-center mb-2">
                                     <div class="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center mr-2">
-                                        <i class="fas fa-plus-circle text-purple-600 text-xs"></i>
+                                        <i class="fas fa-check-circle text-purple-600 text-xs"></i>
                                     </div>
-                                    <span class="text-xs font-medium text-purple-700">申请共享</span>
+                                    <span class="text-xs font-medium text-purple-700">新增已确认</span>
                                 </div>
-                                <div class="text-lg font-bold text-gray-800">${d.newApply.toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
-                                <div class="text-xs text-gray-400 mt-1">金额: <span class="text-purple-600">${d.newAmt.toFixed(2)} 万元</span></div>
+                                <div class="text-lg font-bold text-gray-800">${(d.newConfirmed || 0).toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
+                                <div class="text-xs text-gray-400 mt-1">金额: <span class="text-purple-600">${(d.newConfirmedAmt || 0).toFixed(2)} 万元</span></div>
+                            </div>
+                            <!-- 新增待确认详情 -->
+                            <div class="bg-white rounded-lg p-3 border border-orange-100">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-6 h-6 bg-orange-100 rounded-md flex items-center justify-center mr-2">
+                                        <i class="fas fa-clock text-orange-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-orange-700">新增待确认</span>
+                                </div>
+                                <div class="text-lg font-bold text-gray-800">${(d.newPending || 0).toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
+                                <div class="text-xs text-gray-400 mt-1">金额: <span class="text-orange-600">0.00 万元</span></div>
                             </div>
                         </div>
                         <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between text-xs">
