@@ -173,27 +173,27 @@
 </main>
 
 <script>
-// 完整数据：包含各分类的公里数和金额
+// 完整数据：包含各分类的公里数和金额（金额单位：万元）
 const data = {
     districts: [
-        {name: '蒙自', sign: 197.04, signAmt: 0, exchange: 693.27, exchangeAmt: 147.31, newApply: 76.55, newAmt: 16.27, totalKm: 966.86, amount: 163.58},
-        {name: '绿春', sign: 191.06, signAmt: 0, exchange: 187.03, exchangeAmt: 39.74, newApply: 235.40, newAmt: 15.85, totalKm: 613.49, amount: 55.59},
-        {name: '石屏', sign: 177.71, signAmt: 0, exchange: 175.10, exchangeAmt: 37.21, newApply: 64.34, newAmt: 13.67, totalKm: 417.15, amount: 50.88},
-        {name: '元阳', sign: 186.83, signAmt: 0, exchange: 110.50, exchangeAmt: 23.48, newApply: 72.18, newAmt: 10.16, totalKm: 369.51, amount: 33.64},
-        {name: '金平', sign: 245.98, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 115.01, newAmt: 4.42, totalKm: 360.99, amount: 4.42},
-        {name: '弥勒', sign: 328.21, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 34.19, newAmt: 7.26, totalKm: 362.40, amount: 7.26},
-        {name: '个旧', sign: 146.98, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 105.85, newAmt: 13.78, totalKm: 252.83, amount: 13.78},
-        {name: '屏边', sign: 221.61, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 17.10, newAmt: 3.10, totalKm: 238.71, amount: 3.10},
-        {name: '建水', sign: 135.43, signAmt: 0, exchange: 8.52, exchangeAmt: 1.81, newApply: 89.55, newAmt: 0.49, totalKm: 233.50, amount: 2.30},
-        {name: '河口', sign: 106.72, signAmt: 0, exchange: 39.00, exchangeAmt: 8.29, newApply: 157.61, newAmt: 28.66, totalKm: 303.33, amount: 36.95},
-        {name: '红河县', sign: 199.81, signAmt: 0, exchange: 92.67, exchangeAmt: 19.69, newApply: 0, newAmt: 0, totalKm: 292.48, amount: 19.69},
-        {name: '泸西', sign: 101.43, signAmt: 0, exchange: 69.50, exchangeAmt: 14.77, newApply: 13.90, newAmt: 2.95, totalKm: 184.83, amount: 17.72},
-        {name: '开远', sign: 169.61, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 4.01, newAmt: 0.85, totalKm: 173.62, amount: 0.85},
-        // 总计
-        {name: '总计', sign: 2408.42, signAmt: 0, exchange: 1375.58, exchangeAmt: 292.30, newApply: 997.68, newAmt: 120.02, totalKm: 4781.68, amount: 412.32}
+        {name: '蒙自', sign: 197.04, signAmt: 41.87, exchange: 693.27, exchangeAmt: 147.31, newApply: 76.55, newAmt: 16.27, totalKm: 966.86, amount: 205.45},
+        {name: '绿春', sign: 191.06, signAmt: 40.60, exchange: 187.03, exchangeAmt: 39.74, newApply: 235.40, newAmt: 15.85, totalKm: 613.49, amount: 96.19},
+        {name: '石屏', sign: 177.71, signAmt: 37.76, exchange: 175.10, exchangeAmt: 37.21, newApply: 64.34, newAmt: 13.67, totalKm: 417.15, amount: 88.64},
+        {name: '元阳', sign: 186.83, signAmt: 39.70, exchange: 110.50, exchangeAmt: 23.48, newApply: 72.18, newAmt: 10.16, totalKm: 369.51, amount: 73.34},
+        {name: '金平', sign: 245.98, signAmt: 52.31, exchange: 0, exchangeAmt: 0, newApply: 115.01, newAmt: 4.42, totalKm: 360.99, amount: 56.73},
+        {name: '弥勒', sign: 328.21, signAmt: 69.83, exchange: 0, exchangeAmt: 0, newApply: 34.19, newAmt: 7.26, totalKm: 362.40, amount: 77.09},
+        {name: '个旧', sign: 146.98, signAmt: 31.27, exchange: 0, exchangeAmt: 0, newApply: 105.85, newAmt: 13.78, totalKm: 252.83, amount: 45.05},
+        {name: '屏边', sign: 221.61, signAmt: 47.09, exchange: 0, exchangeAmt: 0, newApply: 17.10, newAmt: 3.10, totalKm: 238.71, amount: 50.19},
+        {name: '建水', sign: 135.43, signAmt: 28.87, exchange: 8.52, exchangeAmt: 1.81, newApply: 89.55, newAmt: 0.49, totalKm: 233.50, amount: 31.17},
+        {name: '河口', sign: 106.72, signAmt: 22.68, exchange: 39.00, exchangeAmt: 8.29, newApply: 157.61, newAmt: 28.66, totalKm: 303.33, amount: 59.63},
+        {name: '红河县', sign: 199.81, signAmt: 42.48, exchange: 92.67, exchangeAmt: 19.69, newApply: 0, newAmt: 0, totalKm: 292.48, amount: 62.17},
+        {name: '泸西', sign: 101.43, signAmt: 21.66, exchange: 69.50, exchangeAmt: 14.77, newApply: 13.90, newAmt: 2.95, totalKm: 184.83, amount: 39.38},
+        {name: '开远', sign: 169.61, signAmt: 36.04, exchange: 0, exchangeAmt: 0, newApply: 4.01, newAmt: 0.85, totalKm: 173.62, amount: 36.89},
+        // 总计：签订512.15 + 置换292.30 + 申请共享120.02 = 924.47
+        {name: '总计', sign: 2408.42, signAmt: 512.15, exchange: 1375.58, exchangeAmt: 292.30, newApply: 997.68, newAmt: 120.02, totalKm: 4781.68, amount: 924.47}
     ],
     types: [
-        {name: '签订协议', km: 2408.42, amount: 0, color: '#22c55e'},
+        {name: '签订协议', km: 2408.42, amount: 512.15, color: '#22c55e'},
         {name: '置换部分', km: 1375.58, amount: 292.30, color: '#3b82f6'},
         {name: '申请共享', km: 997.68, amount: 120.02, color: '#a855f7'}
     ]
@@ -219,7 +219,7 @@ function animateNum(el, target, suffix = '') {
 // 初始化统计
 function initStats() {
     animateNum(document.getElementById('totalKm'), 4781.68);
-    animateNum(document.getElementById('totalAmount'), 412.32);
+    animateNum(document.getElementById('totalAmount'), 924.47);
     animateNum(document.getElementById('signKm'), 2408.42);
     animateNum(document.getElementById('exchangeKm'), 1375.58);
     animateNum(document.getElementById('newKm'), 997.68);
