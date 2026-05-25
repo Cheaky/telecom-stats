@@ -6,7 +6,6 @@
     <title>电信共享移动统计</title>
     <script src="https://cdn.tailwindcss.com/3.3.3"></script>
     <link href="https://cdn.staticfile.org/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.staticfile.org/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
@@ -19,7 +18,6 @@
             overscroll-behavior-y: none;
         }
         
-        /* 扁平化卡片 */
         .flat-card {
             background: #fff;
             border-radius: 16px;
@@ -27,38 +25,37 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .flat-card:active {
-            transform: scale(0.98);
+        .top-nav { box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
+        
+        .counter { font-variant-numeric: tabular-nums; }
+        
+        .data-row { transition: background-color 0.2s; }
+        .data-row:active { background-color: #f1f5f9; }
+        
+        html { scroll-behavior: smooth; }
+        
+        /* 详情展开动画 */
+        .detail-row {
+            display: none;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         }
         
-        /* 导航栏 */
-        .top-nav {
-            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        .detail-row.active { display: table-row; }
+        
+        .detail-card {
+            animation: slideDown 0.3s ease-out;
         }
         
-        /* 数字动画 */
-        .counter {
-            font-variant-numeric: tabular-nums;
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        /* 表格 */
-        .data-row {
-            transition: background-color 0.2s;
+        .stat-tag {
+            transition: all 0.2s;
         }
         
-        .data-row:active {
-            background-color: #f1f5f9;
-        }
-        
-        /* 平滑滚动 */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* 安全区域适配 */
-        .safe-area-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
+        .stat-tag:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="min-h-screen pb-8">
@@ -108,21 +105,21 @@
     <!-- 分类卡片 -->
     <section class="px-4 mt-4">
         <div class="grid grid-cols-3 gap-3">
-            <div class="flat-card p-4 text-center" onclick="switchTab('sign')">
+            <div class="flat-card p-4 text-center stat-tag" onclick="scrollToSection('table')">
                 <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-file-signature text-green-600 text-lg"></i>
                 </div>
                 <div class="text-lg font-bold text-gray-800" id="signKm">0</div>
                 <div class="text-xs text-gray-400">签订</div>
             </div>
-            <div class="flat-card p-4 text-center" onclick="switchTab('exchange')">
+            <div class="flat-card p-4 text-center stat-tag" onclick="scrollToSection('table')">
                 <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-exchange-alt text-blue-600 text-lg"></i>
                 </div>
                 <div class="text-lg font-bold text-gray-800" id="exchangeKm">0</div>
                 <div class="text-xs text-gray-400">置换</div>
             </div>
-            <div class="flat-card p-4 text-center" onclick="switchTab('new')">
+            <div class="flat-card p-4 text-center stat-tag" onclick="scrollToSection('table')">
                 <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-plus-circle text-purple-600 text-lg"></i>
                 </div>
@@ -146,13 +143,16 @@
         </div>
     </section>
 
-    <!-- 数据表格 -->
-    <section class="px-4 mt-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-3">详细数据</h2>
+    <!-- 数据表格（可展开详情） -->
+    <section id="table" class="px-4 mt-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-semibold text-gray-800">详细数据</h2>
+            <span class="text-xs text-gray-400">点击查看详情</span>
+        </div>
         <div class="flat-card overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
                         <tr>
                             <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500">区县</th>
                             <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">签订</th>
@@ -162,46 +162,46 @@
                             <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">金额</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-50"></tbody>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </div>
     </section>
 
-    <!-- 底部安全区 -->
     <div class="h-8"></div>
 
 </main>
 
 <script>
+// 完整数据：包含各分类的公里数和金额
 const data = {
-    // 合并红河县和红河为红河县: 红河县原0+红河199.81=199.81, 金额19.69
     districts: [
-        {name: '蒙自', sign: 197.04, exchange: 693.27, newApply: 76.55, totalKm: 966.86, amount: 163.57},
-        {name: '绿春', sign: 191.06, exchange: 187.03, newApply: 235.40, totalKm: 613.49, amount: 55.59},
-        {name: '石屏', sign: 177.71, exchange: 175.10, newApply: 64.34, totalKm: 417.15, amount: 50.88},
-        {name: '元阳', sign: 186.83, exchange: 110.50, newApply: 72.18, totalKm: 369.51, amount: 33.64},
-        {name: '金平', sign: 245.98, exchange: 0, newApply: 115.01, totalKm: 360.99, amount: 4.42},
-        {name: '弥勒', sign: 328.21, exchange: 0, newApply: 34.19, totalKm: 362.40, amount: 7.26},
-        {name: '个旧', sign: 146.98, exchange: 0, newApply: 105.85, totalKm: 252.83, amount: 13.78},
-        {name: '屏边', sign: 221.61, exchange: 0, newApply: 17.10, totalKm: 238.71, amount: 3.10},
-        {name: '建水', sign: 135.43, exchange: 8.52, newApply: 89.55, totalKm: 233.50, amount: 2.30},
-        {name: '河口', sign: 106.72, exchange: 39.00, newApply: 157.61, totalKm: 303.33, amount: 36.95},
-        {name: '红河县', sign: 199.81, exchange: 92.67, newApply: 0, totalKm: 292.48, amount: 19.69},
-        {name: '泸西', sign: 101.43, exchange: 69.50, newApply: 13.90, totalKm: 184.83, amount: 17.72},
-        {name: '开远', sign: 169.61, exchange: 0, newApply: 4.01, totalKm: 173.62, amount: 0.85},
-        // 汇总: 2408.42 + 1375.58 + 997.68 = 4781.68
-        {name: '总计', sign: 2408.42, exchange: 1375.58, newApply: 997.68, totalKm: 4781.68, amount: 412.31}
+        {name: '蒙自', sign: 197.04, signAmt: 0, exchange: 693.27, exchangeAmt: 147.31, newApply: 76.55, newAmt: 16.27, totalKm: 966.86, amount: 163.58},
+        {name: '绿春', sign: 191.06, signAmt: 0, exchange: 187.03, exchangeAmt: 39.74, newApply: 235.40, newAmt: 15.85, totalKm: 613.49, amount: 55.59},
+        {name: '石屏', sign: 177.71, signAmt: 0, exchange: 175.10, exchangeAmt: 37.21, newApply: 64.34, newAmt: 13.67, totalKm: 417.15, amount: 50.88},
+        {name: '元阳', sign: 186.83, signAmt: 0, exchange: 110.50, exchangeAmt: 23.48, newApply: 72.18, newAmt: 10.16, totalKm: 369.51, amount: 33.64},
+        {name: '金平', sign: 245.98, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 115.01, newAmt: 4.42, totalKm: 360.99, amount: 4.42},
+        {name: '弥勒', sign: 328.21, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 34.19, newAmt: 7.26, totalKm: 362.40, amount: 7.26},
+        {name: '个旧', sign: 146.98, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 105.85, newAmt: 13.78, totalKm: 252.83, amount: 13.78},
+        {name: '屏边', sign: 221.61, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 17.10, newAmt: 3.10, totalKm: 238.71, amount: 3.10},
+        {name: '建水', sign: 135.43, signAmt: 0, exchange: 8.52, exchangeAmt: 1.81, newApply: 89.55, newAmt: 0.49, totalKm: 233.50, amount: 2.30},
+        {name: '河口', sign: 106.72, signAmt: 0, exchange: 39.00, exchangeAmt: 8.29, newApply: 157.61, newAmt: 28.66, totalKm: 303.33, amount: 36.95},
+        {name: '红河县', sign: 199.81, signAmt: 0, exchange: 92.67, exchangeAmt: 19.69, newApply: 0, newAmt: 0, totalKm: 292.48, amount: 19.69},
+        {name: '泸西', sign: 101.43, signAmt: 0, exchange: 69.50, exchangeAmt: 14.77, newApply: 13.90, newAmt: 2.95, totalKm: 184.83, amount: 17.72},
+        {name: '开远', sign: 169.61, signAmt: 0, exchange: 0, exchangeAmt: 0, newApply: 4.01, newAmt: 0.85, totalKm: 173.62, amount: 0.85},
+        // 总计
+        {name: '总计', sign: 2408.42, signAmt: 0, exchange: 1375.58, exchangeAmt: 292.30, newApply: 997.68, newAmt: 120.02, totalKm: 4781.68, amount: 412.32}
     ],
     types: [
-        {name: '签订', km: 2408.42, color: '#22c55e'},
-        {name: '置换', km: 1375.58, color: '#3b82f6'},
-        {name: '新增', km: 997.68, color: '#a855f7'}
+        {name: '签订', km: 2408.42, amount: 0, color: '#22c55e'},
+        {name: '置换', km: 1375.58, amount: 292.30, color: '#3b82f6'},
+        {name: '新增', km: 997.68, amount: 120.02, color: '#a855f7'}
     ]
 };
 
 let chart = null;
 let currentView = 'district';
+let expandedRow = null;
 
 // 数字动画
 function animateNum(el, target, suffix = '') {
@@ -219,26 +219,122 @@ function animateNum(el, target, suffix = '') {
 // 初始化统计
 function initStats() {
     animateNum(document.getElementById('totalKm'), 4781.68);
-    animateNum(document.getElementById('totalAmount'), 412.31);
+    animateNum(document.getElementById('totalAmount'), 412.32);
     animateNum(document.getElementById('signKm'), 2408.42);
     animateNum(document.getElementById('exchangeKm'), 1375.58);
     animateNum(document.getElementById('newKm'), 997.68);
 }
 
-// 渲染表格
+// 渲染表格（带展开详情）
 function renderTable() {
     const tbody = document.getElementById('table-body');
-    tbody.innerHTML = data.districts.map(d => {
+    let html = '';
+    
+    data.districts.forEach((d, index) => {
         const isTotal = d.name === '总计';
-        return `<tr class="data-row">
-            <td class="px-3 py-2.5 ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-700'}">${d.name}</td>
+        
+        // 主行
+        html += `<tr class="data-row ${isTotal ? 'bg-blue-50' : ''}" data-index="${index}" onclick="toggleDetail(${index})">
+            <td class="px-3 py-2.5 ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-700'}">
+                ${!isTotal ? '<i class="fas fa-chevron-right text-xs text-gray-300 mr-1 expand-icon" id="icon-' + index + '"></i>' : ''}
+                ${d.name}
+            </td>
             <td class="px-3 py-2.5 text-right text-gray-500">${d.sign.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right text-gray-500">${d.exchange.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right text-gray-500">${d.newApply.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-800'}">${d.totalKm.toFixed(2)}</td>
             <td class="px-3 py-2.5 text-right ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-800'}">${d.amount.toFixed(2)}</td>
         </tr>`;
-    }).join('');
+        
+        // 详情行
+        if (!isTotal) {
+            html += `<tr class="detail-row" id="detail-${index}">
+                <td colspan="6" class="px-3 py-3">
+                    <div class="detail-card bg-gray-50 rounded-xl p-4">
+                        <div class="text-xs font-medium text-gray-500 mb-3">${d.name} - 详细情况</div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <!-- 签订详情 -->
+                            <div class="bg-white rounded-lg p-3 border border-green-100">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-6 h-6 bg-green-100 rounded-md flex items-center justify-center mr-2">
+                                        <i class="fas fa-file-signature text-green-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-green-700">签订合同</span>
+                                </div>
+                                <div class="text-lg font-bold text-gray-800">${d.sign.toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
+                                <div class="text-xs text-gray-400 mt-1">金额: <span class="text-green-600">${d.signAmt.toFixed(2)} 万元</span></div>
+                            </div>
+                            <!-- 置换详情 -->
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center mr-2">
+                                        <i class="fas fa-exchange-alt text-blue-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-blue-700">置换</span>
+                                </div>
+                                <div class="text-lg font-bold text-gray-800">${d.exchange.toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
+                                <div class="text-xs text-gray-400 mt-1">金额: <span class="text-blue-600">${d.exchangeAmt.toFixed(2)} 万元</span></div>
+                            </div>
+                            <!-- 新增申请详情 -->
+                            <div class="bg-white rounded-lg p-3 border border-purple-100">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center mr-2">
+                                        <i class="fas fa-plus-circle text-purple-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-purple-700">申请共享</span>
+                                </div>
+                                <div class="text-lg font-bold text-gray-800">${d.newApply.toFixed(2)} <span class="text-xs font-normal text-gray-400">公里</span></div>
+                                <div class="text-xs text-gray-400 mt-1">金额: <span class="text-purple-600">${d.newAmt.toFixed(2)} 万元</span></div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between text-xs">
+                            <span class="text-gray-500">合计: <span class="font-semibold text-gray-700">${d.totalKm.toFixed(2)} 公里</span></span>
+                            <span class="text-gray-500">金额: <span class="font-semibold text-gray-700">${d.amount.toFixed(2)} 万元</span></span>
+                        </div>
+                    </div>
+                </td>
+            </tr>`;
+        }
+    });
+    
+    tbody.innerHTML = html;
+}
+
+// 切换详情展开/收起
+function toggleDetail(index) {
+    const detailRow = document.getElementById('detail-' + index);
+    const icon = document.getElementById('icon-' + index);
+    
+    if (!detailRow) return;
+    
+    // 关闭其他展开的行
+    if (expandedRow !== null && expandedRow !== index) {
+        const prevDetail = document.getElementById('detail-' + expandedRow);
+        const prevIcon = document.getElementById('icon-' + expandedRow);
+        if (prevDetail) prevDetail.classList.remove('active');
+        if (prevIcon) prevIcon.style.transform = 'rotate(0deg)';
+    }
+    
+    // 切换当前行
+    if (detailRow.classList.contains('active')) {
+        detailRow.classList.remove('active');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+        expandedRow = null;
+    } else {
+        detailRow.classList.add('active');
+        if (icon) icon.style.transform = 'rotate(90deg)';
+        expandedRow = index;
+        
+        // 滚动到可见区域
+        setTimeout(() => {
+            detailRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+}
+
+// 滚动到指定区域
+function scrollToSection(id) {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
 }
 
 // 区县柱状图
@@ -324,7 +420,7 @@ function renderTypeChart() {
                 label: { show: true, fontSize: 14, fontWeight: 'bold' },
                 itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.2)' }
             },
-            data: data.types
+            data: data.types.map(t => ({value: t.km, name: t.name, itemStyle: {color: t.color}}))
         }]
     }, true);
 }
@@ -339,13 +435,6 @@ function switchChart(view) {
         ? 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-white text-gray-800 shadow-sm' 
         : 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500';
     view === 'district' ? renderDistrictChart() : renderTypeChart();
-}
-
-// 切换标签（分类卡片点击）
-function switchTab(type) {
-    const views = { 'sign': 'district', 'exchange': 'district', 'new': 'district' };
-    // 可扩展更多交互
-    console.log('切换到:', type);
 }
 
 // 窗口大小变化时重绘图表
