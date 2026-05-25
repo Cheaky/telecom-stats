@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="preconnect" href="https://cdn.staticfile.org" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.staticfile.org">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+<title>电信共享移动统计</title>
+
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.staticfile.org/font-awesome/6.7.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="https://cdn.staticfile.org/animate.css/4.1.1/animate.min.css">
+    <link href="https://cdn.staticfile.org/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+<script src="https://cdn.staticfile.org/Chart.js/3.9.1/chart.min.js" defer></script>
+<style>
+        /* 基础样式 */
+        body {
+            font-family: "Noto Sans SC", sans-serif;
+            /* background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%); */
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #2d3748;
+        }
+
+        /* 毛玻璃效果 */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        /* 卡片悬停效果 */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px 0 rgba(31, 38, 135, 0.2);
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            height: 320px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* 文本高亮效果 */
+        .highlight-text {
+            position: relative;
+            display: inline-block;
+        }
+
+        .highlight-text::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background-color: rgba(236, 72, 153, 0.2);
+            z-index: -1;
+        }
+
+        /* 移动端菜单 */
+        .mobile-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            margin: 0.5rem;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            transform-origin: top;
+            transform: scaleY(0);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 100;
+        }
+
+        .mobile-menu.active {
+            transform: scaleY(1);
+            opacity: 1;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-menu a:hover,
+        .mobile-menu a:focus {
+            background-color: rgba(236, 72, 153, 0.1);
+            color: #db2777;
+        }
+
+        /* 标签样式 */
+        .tag-pill {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(236, 72, 153, 0.1);
+            color: #db2777;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<section id="nav_header">
+<nav class="glassmorphism sticky top-0 z-50 p-4 mb-0" id="mainNav" style="background: linear-gradient(135deg, rgba(24,144,255,0.95), rgba(9,109,217,0.95)); backdrop-filter: blur(10px);">
+<div class="container mx-auto flex items-center justify-between">
+<div class="text-xl font-bold text-white flex items-center">
+<i class="fas fa-chart-bar mr-2"></i>电信共享移动统计汇总
+</div>
+<div class="hidden md:flex space-x-6">
+<a class="text-white/90 hover:text-white transition-colors" href="#hero_banner">首页</a>
+<a class="text-white/90 hover:text-white transition-colors" href="#stats_cards">核心指标</a>
+<a class="text-white/90 hover:text-white transition-colors" href="#data_visualization">数据分析</a>
+<a class="text-white/90 hover:text-white transition-colors" href="#detail_table">详细数据</a>
+</div>
+<button aria-label="导航菜单" class="md:hidden text-white focus:outline-none" id="mobileMenuButton">
+<i class="fas fa-bars text-xl"></i>
+</button>
+</div>
+<div class="mobile-menu md:hidden hidden absolute top-full left-0 w-full" id="mobileMenu" style="background: linear-gradient(135deg, rgba(24,144,255,0.98), rgba(9,109,217,0.98));">
+<a class="text-white/90 hover:text-white transition-colors flex items-center p-4 border-b border-white/20" href="#hero_banner">
+<i class="fas fa-home mr-3"></i>首页
+</a>
+<a class="text-white/90 hover:text-white transition-colors flex items-center p-4 border-b border-white/20" href="#stats_cards">
+<i class="fas fa-chart-line mr-3"></i>核心指标
+</a>
+<a class="text-white/90 hover:text-white transition-colors flex items-center p-4 border-b border-white/20" href="#data_visualization">
+<i class="fas fa-chart-pie mr-3"></i>数据分析
+</a>
+<a class="text-white/90 hover:text-white transition-colors flex items-center p-4" href="#detail_table">
+<i class="fas fa-table mr-3"></i>详细数据
+</a>
+</div>
+</nav>
+</section>
+
+<section id="hero_banner" class="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 pt-16 pb-12 px-4">
+<div class="container mx-auto text-center">
+<h1 class="text-2xl md:text-3xl font-bold text-white mb-2 animate__animated animate__fadeInDown">电信共享移动统计汇总</h1>
+<p class="text-white/80 text-sm md:text-base animate__animated animate__fadeInUp">2026年度数据统计报告</p>
+<div class="mt-6 flex justify-center gap-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+<div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
+<i class="fas fa-map-marker-alt mr-2"></i>14个区县
+</div>
+<div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
+<i class="fas fa-calendar-alt mr-2"></i>数据更新: 2026-05-25
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-8 bg-white" style="border-radius: 50% 50% 0 0;"></div>
+</section>
+
+<section id="stats_cards" class="bg-white pt-10 pb-6 px-4 -mt-4">
+<div class="container mx-auto">
+<div class="grid grid-cols-2 gap-4 md:gap-6">
+<div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 shadow-lg text-white transform hover:scale-105 transition-transform duration-300 animate__animated animate__fadeInLeft">
+<div class="flex items-center justify-between mb-3">
+<i class="fas fa-road text-2xl text-white/80"></i>
+<span class="text-xs bg-white/20 px-2 py-1 rounded-full">总公里数</span>
+</div>
+<div class="text-3xl md:text-4xl font-bold mb-1" id="totalKm">0</div>
+<div class="text-sm text-white/80">公里</div>
+</div>
+<div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-5 shadow-lg text-white transform hover:scale-105 transition-transform duration-300 animate__animated animate__fadeInRight">
+<div class="flex items-center justify-between mb-3">
+<i class="fas fa-yen-sign text-2xl text-white/80"></i>
+<span class="text-xs bg-white/20 px-2 py-1 rounded-full">总金额</span>
+</div>
+<div class="text-3xl md:text-4xl font-bold mb-1" id="totalAmount">0</div>
+<div class="text-sm text-white/80">万元</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-3 mt-4">
+<div class="bg-green-50 rounded-xl p-3 text-center border border-green-100">
+<div class="text-lg font-bold text-green-600" id="signKm">0</div>
+<div class="text-xs text-gray-500">签订(公里)</div>
+</div>
+<div class="bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
+<div class="text-lg font-bold text-blue-600" id="exchangeKm">0</div>
+<div class="text-xs text-gray-500">置换(公里)</div>
+</div>
+<div class="bg-purple-50 rounded-xl p-3 text-center border border-purple-100">
+<div class="text-lg font-bold text-purple-600" id="newKm">0</div>
+<div class="text-xs text-gray-500">新增申请中(公里)</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="data_visualization" class="bg-gray-50 pt-8 pb-6 px-4">
+<div class="container mx-auto">
+<div class="flex justify-center mb-6">
+<div class="bg-white rounded-full p-1 shadow-md inline-flex">
+<button class="nav_header_tab-btn px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-blue-500 text-white" data-tab="district" id="nav_header_district_btn">
+<i class="fas fa-chart-bar mr-1"></i>按区县
+</button>
+<button class="nav_header_tab-btn px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 text-gray-600 hover:bg-gray-100" data-tab="type" id="nav_header_type_btn">
+<i class="fas fa-chart-pie mr-1"></i>按类型
+</button>
+</div>
+</div>
+<div class="bg-white rounded-2xl shadow-lg p-4 min-h-[400px]">
+<div id="nav_header_chart_container" class="w-full h-[350px]"></div>
+</div>
+</div>
+</section>
+
+<section id="detail_table" class="bg-white pt-8 pb-8 px-4">
+<div class="container mx-auto">
+<h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+<i class="fas fa-table text-blue-500 mr-2"></i>详细数据表格
+</h2>
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+<div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+<table class="w-full text-sm" id="nav_header_data_table">
+<thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white sticky top-0 z-10">
+<tr>
+<th class="px-4 py-3 text-left font-semibold">区县</th>
+<th class="px-4 py-3 text-right font-semibold">签订(km)</th>
+<th class="px-4 py-3 text-right font-semibold">置换(km)</th>
+<th class="px-4 py-3 text-right font-semibold">新增申请中(km)</th>
+<th class="px-4 py-3 text-right font-semibold">公里数合计</th>
+<th class="px-4 py-3 text-right font-semibold">金额合计(万元)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100" id="nav_header_table_body">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<section id="footer_info" class="bg-gray-800 text-white py-6 px-4">
+<div class="container mx-auto text-center">
+<p class="text-gray-400 text-sm">© 2026 电信共享移动统计汇总</p>
+<p class="text-gray-500 text-xs mt-2">数据来源：电信共享移动统计汇总.xlsx</p>
+</div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+const nav_header_data = {
+    districts: [
+        {name: '个旧', sign: 146.98, exchange: 0, newApply: 105.85, totalKm: 252.83, totalAmount: 13.78},
+        {name: '元阳', sign: 186.83, exchange: 110.5, newApply: 72.18, totalKm: 369.51, totalAmount: 33.64},
+        {name: '屏边', sign: 221.61, exchange: 0, newApply: 17.10, totalKm: 238.71, totalAmount: 3.10},
+        {name: '建水', sign: 135.43, exchange: 8.52, newApply: 89.55, totalKm: 233.50, totalAmount: 2.30},
+        {name: '开远', sign: 169.61, exchange: 0, newApply: 4.01, totalKm: 173.62, totalAmount: 0.85},
+        {name: '弥勒', sign: 328.21, exchange: 0, newApply: 34.19, totalKm: 362.40, totalAmount: 7.26},
+        {name: '河口', sign: 106.72, exchange: 39.00, newApply: 157.61, totalKm: 303.33, totalAmount: 36.95},
+        {name: '泸西', sign: 101.43, exchange: 69.50, newApply: 13.90, totalKm: 184.83, totalAmount: 17.72},
+        {name: '石屏', sign: 177.71, exchange: 175.10, newApply: 64.34, totalKm: 417.15, totalAmount: 50.88},
+        {name: '红河', sign: 199.81, exchange: 92.67, newApply: 0.00, totalKm: 292.48, totalAmount: 19.69},
+        {name: '红河县', sign: 0.00, exchange: 0, newApply: 12.00, totalKm: 12.00, totalAmount: 2.55},
+        {name: '绿春', sign: 191.06, exchange: 187.03, newApply: 235.40, totalKm: 613.49, totalAmount: 55.59},
+        {name: '蒙自', sign: 197.04, exchange: 693.27, newApply: 76.55, totalKm: 966.86, totalAmount: 163.57},
+        {name: '金平', sign: 245.98, exchange: 0, newApply: 115.01, totalKm: 360.99, totalAmount: 4.42},
+        {name: '总计', sign: 2408.42, exchange: 1375.58, newApply: 997.68, totalKm: 4781.68, totalAmount: 412.31}
+    ],
+    types: [
+        {name: '签订', km: 2408.42, amount: 0},
+        {name: '置换', km: 1375.58, amount: 292.29},
+        {name: '新增申请中', km: 997.68, amount: 120.02}
+    ]
+};
+
+let nav_header_chart = null;
+let nav_header_currentTab = 'district';
+
+function nav_header_animateNumber(element, target, duration = 1500) {
+    const start = 0;
+    const startTime = performance.now();
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = start + (target - start) * easeOutQuart;
+        element.textContent = current.toFixed(2);
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+function nav_header_initStats() {
+    nav_header_animateNumber(document.getElementById('totalKm'), 4781.68);
+    nav_header_animateNumber(document.getElementById('totalAmount'), 412.31);
+    nav_header_animateNumber(document.getElementById('signKm'), 2408.42);
+    nav_header_animateNumber(document.getElementById('exchangeKm'), 1375.58);
+    nav_header_animateNumber(document.getElementById('newKm'), 997.68);
+}
+
+function nav_header_renderDistrictChart() {
+    const chartDom = document.getElementById('nav_header_chart_container');
+    if (!nav_header_chart) {
+        nav_header_chart = echarts.init(chartDom);
+    }
+    const districtData = nav_header_data.districts.filter(d => d.name !== '总计');
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'value',
+            axisLabel: { formatter: '{value}' }
+        },
+        yAxis: {
+            type: 'category',
+            data: districtData.map(d => d.name),
+            inverse: true
+        },
+        series: [
+            {
+                name: '公里数',
+                type: 'bar',
+                data: districtData.map(d => d.totalKm),
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#1890ff' },
+                        { offset: 1, color: '#096dd9' }
+                    ]),
+                    borderRadius: [0, 4, 4, 0]
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    formatter: '{c} km'
+                }
+            }
+        ]
+    };
+    nav_header_chart.setOption(option, true);
+}
+
+function nav_header_renderTypeChart() {
+    const chartDom = document.getElementById('nav_header_chart_container');
+    if (!nav_header_chart) {
+        nav_header_chart = echarts.init(chartDom);
+    }
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            formatter: '{b}: {c} km ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            top: 'center'
+        },
+        series: [
+            {
+                name: '类型分布',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 10,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: {
+                    show: true,
+                    formatter: '{b}\n{c} km'
+                },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                data: [
+                    { value: 2408.42, name: '签订', itemStyle: { color: '#52c41a' } },
+                    { value: 1375.58, name: '置换', itemStyle: { color: '#1890ff' } },
+                    { value: 997.68, name: '新增申请中', itemStyle: { color: '#722ed1' } }
+                ]
+            }
+        ]
+    };
+    nav_header_chart.setOption(option, true);
+}
+
+function nav_header_renderTable() {
+    const tbody = document.getElementById('nav_header_table_body');
+    tbody.innerHTML = '';
+    nav_header_data.districts.forEach((district, index) => {
+        const isTotal = district.name === '总计';
+        const row = document.createElement('tr');
+        row.className = isTotal ? 'bg-blue-50 font-bold' : 'hover:bg-gray-50 cursor-pointer transition-colors';
+        row.innerHTML = `
+            <td class="px-4 py-3 text-gray-800">${district.name}</td>
+            <td class="px-4 py-3 text-right text-gray-600">${district.sign.toFixed(2)}</td>
+            <td class="px-4 py-3 text-right text-gray-600">${district.exchange.toFixed(2)}</td>
+            <td class="px-4 py-3 text-right text-gray-600">${district.newApply.toFixed(2)}</td>
+            <td class="px-4 py-3 text-right text-gray-800">${district.totalKm.toFixed(2)}</td>
+            <td class="px-4 py-3 text-right text-gray-800">${district.totalAmount.toFixed(2)}</td>
+        `;
+        if (!isTotal) {
+            row.addEventListener('click', function() {
+                this.classList.toggle('bg-blue-100');
+                const nextRow = this.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('detail-row')) {
+                    nextRow.remove();
+                } else {
+                    const detailRow = document.createElement('tr');
+                    detailRow.className = 'detail-row bg-gray-50 animate__animated animate__fadeIn';
+                    detailRow.innerHTML = `
+                        <td colspan="6" class="px-4 py-3">
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div class="bg-green-100 rounded-lg p-2 text-center">
+                                    <div class="text-green-600 font-semibold">签订</div>
+                                    <div class="text-gray-700">${district.sign.toFixed(2)} km</div>
+                                </div>
+                                <div class="bg-blue-100 rounded-lg p-2 text-center">
+                                    <div class="text-blue-600 font-semibold">置换</div>
+                                    <div class="text-gray-700">${district.exchange.toFixed(2)} km</div>
+                                </div>
+                                <div class="bg-purple-100 rounded-lg p-2 text-center">
+                                    <div class="text-purple-600 font-semibold">新增申请中</div>
+                                    <div class="text-gray-700">${district.newApply.toFixed(2)} km</div>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    this.after(detailRow);
+                }
+            });
+        }
+        tbody.appendChild(row);
+    });
+}
+
+function nav_header_switchTab(tab) {
+    nav_header_currentTab = tab;
+    const districtBtn = document.getElementById('nav_header_district_btn');
+    const typeBtn = document.getElementById('nav_header_type_btn');
+    if (tab === 'district') {
+        districtBtn.className = 'nav_header_tab-btn px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-blue-500 text-white';
+        typeBtn.className = 'nav_header_tab-btn px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 text-gray-600 hover:bg-gray-100';
+        nav_header_renderDistrictChart();
+    } else {
+        typeBtn.className = 'nav_header_tab-btn px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-blue-500 text-white';
+        districtBtn.className = 'nav_header_tab-btn px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 text-gray-600 hover:bg-gray-100';
+        nav_header_renderTypeChart();
+    }
+}
+
+document.getElementById('nav_header_district_btn').addEventListener('click', function() {
+    nav_header_switchTab('district');
+});
+
+document.getElementById('nav_header_type_btn').addEventListener('click', function() {
+    nav_header_switchTab('type');
+});
+
+document.getElementById('mobileMenuButton').addEventListener('click', function() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenu.classList.toggle('hidden');
+});
+
+window.addEventListener('resize', function() {
+    if (nav_header_chart) {
+        nav_header_chart.resize();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    nav_header_initStats();
+    nav_header_renderDistrictChart();
+    nav_header_renderTable();
+});
+</script>
+
+<section id="hero_banner" class="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700">
+<header class="container mx-auto py-12 px-4 md:px-8 relative">
+<div class="max-w-4xl mx-auto text-center">
+<h1 class="text-3xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg">电信共享移动统计报告</h1>
+<p class="text-lg md:text-xl text-blue-100 mb-6">基于Excel汇总数据的H5统计报告</p>
+<p class="text-sm md:text-base text-blue-200 mb-8">数据来源：电信共享移动统计汇总.xlsx | 简要说明：展示各区县共享移动统计数据</p>
+<div class="flex flex-wrap justify-center gap-6 mt-8">
+<div class="glassmorphism p-6 rounded-2xl text-center min-w-40 card-hover animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+<div class="text-sm text-blue-200 mb-2">总公里数</div>
+<div class="text-3xl md:text-4xl font-bold text-white">4781.68</div>
+<div class="text-xs text-blue-300 mt-1">公里</div>
+</div>
+<div class="glassmorphism p-6 rounded-2xl text-center min-w-40 card-hover animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+<div class="text-sm text-blue-200 mb-2">总金额</div>
+<div class="text-3xl md:text-4xl font-bold text-white">412.31</div>
+<div class="text-xs text-blue-300 mt-1">万元</div>
+</div>
+<div class="glassmorphism p-6 rounded-2xl text-center min-w-40 card-hover animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+<div class="text-sm text-blue-200 mb-2">签订公里</div>
+<div class="text-3xl md:text-4xl font-bold text-white">2408.42</div>
+<div class="text-xs text-blue-300 mt-1">公里</div>
+</div>
+<div class="glassmorphism p-6 rounded-2xl text-center min-w-40 card-hover animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+<div class="text-sm text-blue-200 mb-2">置换公里</div>
+<div class="text-3xl md:text-4xl font-bold text-white">1375.58</div>
+<div class="text-xs text-blue-300 mt-1">公里</div>
+</div>
+</div>
+</div>
+</header>
+</section>
+
+<section id="stats_cards" class="py-12 bg-gray-50">
+<div class="container mx-auto px-4">
+<div class="text-center mb-8">
+<h2 class="text-2xl md:text-3xl font-bold text-gray-800">核心指标概览</h2>
+<p class="text-gray-500 mt-2">分类统计汇总</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+<div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow duration-300">
+<div class="flex items-center justify-between">
+<div>
+<div class="text-gray-500 text-sm">签订类型</div>
+<div class="text-2xl font-bold text-gray-800 mt-1">2408.42</div>
+<div class="text-gray-400 text-xs mt-1">公里</div>
+</div>
+<div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+<i class="fas fa-file-signature text-blue-500 text-xl"></i>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500 hover:shadow-xl transition-shadow duration-300">
+<div class="flex items-center justify-between">
+<div>
+<div class="text-gray-500 text-sm">置换类型</div>
+<div class="text-2xl font-bold text-gray-800 mt-1">1375.58</div>
+<div class="text-gray-400 text-xs mt-1">公里 | 292.29万元</div>
+</div>
+<div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+<i class="fas fa-exchange-alt text-orange-500 text-xl"></i>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow duration-300">
+<div class="flex items-center justify-between">
+<div>
+<div class="text-gray-500 text-sm">新增-申请中</div>
+<div class="text-2xl font-bold text-gray-800 mt-1">997.68</div>
+<div class="text-gray-400 text-xs mt-1">公里 | 120.02万元</div>
+</div>
+<div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+<i class="fas fa-plus-circle text-green-500 text-xl"></i>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="data_visualization" class="py-12 bg-white">
+<div class="container mx-auto px-4">
+<div class="text-center mb-8">
+<h2 class="text-2xl md:text-3xl font-bold text-gray-800">数据可视化分析</h2>
+<p class="text-gray-500 mt-2">各区县公里数分布与类型占比</p>
+</div>
+<div class="flex justify-center mb-6 gap-4">
+<button id="hero_banner_btn_district" class="px-6 py-2 bg-blue-500 text-white rounded-full font-medium hover:bg-blue-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300">
+<i class="fas fa-chart-bar mr-2"></i>按区县
+</button>
+<button id="hero_banner_btn_type" class="px-6 py-2 bg-gray-200 text-gray-600 rounded-full font-medium hover:bg-gray-300 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+<i class="fas fa-chart-pie mr-2"></i>按类型
+</button>
+</div>
+<div id="hero_banner_chart_container" class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-4" style="height: 400px;">
+<div id="hero_banner_chart" class="w-full h-full"></div>
+</div>
+</div>
+</section>
+
+<section id="detail_table" class="py-12 bg-gray-50">
+<div class="container mx-auto px-4">
+<div class="text-center mb-8">
+<h2 class="text-2xl md:text-3xl font-bold text-gray-800">详细数据表格</h2>
+<p class="text-gray-500 mt-2">点击区县查看详细数据</p>
+</div>
+<div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full min-w-800">
+<thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+<tr>
+<th class="px-4 py-3 text-left text-sm font-semibold">区县</th>
+<th class="px-4 py-3 text-right text-sm font-semibold">签订(公里)</th>
+<th class="px-4 py-3 text-right text-sm font-semibold">置换(公里)</th>
+<th class="px-4 py-3 text-right text-sm font-semibold">新增-申请中(公里)</th>
+<th class="px-4 py-3 text-right text-sm font-semibold">公里数合计</th>
+<th class="px-4 py-3 text-right text-sm font-semibold">金额合计(万元)</th>
+</tr>
+</thead>
+<tbody id="hero_banner_table_body" class="text-sm text-gray-600">
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="个旧">
+<td class="px-4 py-3 font-medium text-blue-600">个旧</td>
+<td class="px-4 py-3 text-right">146.98</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">105.85</td>
+<td class="px-4 py-3 text-right font-semibold">252.83</td>
+<td class="px-4 py-3 text-right">13.78</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="元阳">
+<td class="px-4 py-3 font-medium text-blue-600">元阳</td>
+<td class="px-4 py-3 text-right">186.83</td>
+<td class="px-4 py-3 text-right">110.50</td>
+<td class="px-4 py-3 text-right">72.18</td>
+<td class="px-4 py-3 text-right font-semibold">369.51</td>
+<td class="px-4 py-3 text-right">33.64</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="屏边">
+<td class="px-4 py-3 font-medium text-blue-600">屏边</td>
+<td class="px-4 py-3 text-right">221.61</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">17.10</td>
+<td class="px-4 py-3 text-right font-semibold">238.71</td>
+<td class="px-4 py-3 text-right">3.10</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="建水">
+<td class="px-4 py-3 font-medium text-blue-600">建水</td>
+<td class="px-4 py-3 text-right">135.43</td>
+<td class="px-4 py-3 text-right">8.52</td>
+<td class="px-4 py-3 text-right">89.55</td>
+<td class="px-4 py-3 text-right font-semibold">233.50</td>
+<td class="px-4 py-3 text-right">2.30</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="开远">
+<td class="px-4 py-3 font-medium text-blue-600">开远</td>
+<td class="px-4 py-3 text-right">169.61</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">4.01</td>
+<td class="px-4 py-3 text-right font-semibold">173.62</td>
+<td class="px-4 py-3 text-right">0.85</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="弥勒">
+<td class="px-4 py-3 font-medium text-blue-600">弥勒</td>
+<td class="px-4 py-3 text-right">328.21</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">34.19</td>
+<td class="px-4 py-3 text-right font-semibold">362.40</td>
+<td class="px-4 py-3 text-right">7.26</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="河口">
+<td class="px-4 py-3 font-medium text-blue-600">河口</td>
+<td class="px-4 py-3 text-right">106.72</td>
+<td class="px-4 py-3 text-right">39.00</td>
+<td class="px-4 py-3 text-right">157.61</td>
+<td class="px-4 py-3 text-right font-semibold">303.33</td>
+<td class="px-4 py-3 text-right">36.95</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="泸西">
+<td class="px-4 py-3 font-medium text-blue-600">泸西</td>
+<td class="px-4 py-3 text-right">101.43</td>
+<td class="px-4 py-3 text-right">69.50</td>
+<td class="px-4 py-3 text-right">13.90</td>
+<td class="px-4 py-3 text-right font-semibold">184.83</td>
+<td class="px-4 py-3 text-right">17.72</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="石屏">
+<td class="px-4 py-3 font-medium text-blue-600">石屏</td>
+<td class="px-4 py-3 text-right">177.71</td>
+<td class="px-4 py-3 text-right">175.10</td>
+<td class="px-4 py-3 text-right">64.34</td>
+<td class="px-4 py-3 text-right font-semibold">417.15</td>
+<td class="px-4 py-3 text-right">50.88</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="红河">
+<td class="px-4 py-3 font-medium text-blue-600">红河</td>
+<td class="px-4 py-3 text-right">199.81</td>
+<td class="px-4 py-3 text-right">92.67</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right font-semibold">292.48</td>
+<td class="px-4 py-3 text-right">19.69</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="红河县">
+<td class="px-4 py-3 font-medium text-blue-600">红河县</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">12.00</td>
+<td class="px-4 py-3 text-right font-semibold">12.00</td>
+<td class="px-4 py-3 text-right">2.55</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="绿春">
+<td class="px-4 py-3 font-medium text-blue-600">绿春</td>
+<td class="px-4 py-3 text-right">191.06</td>
+<td class="px-4 py-3 text-right">187.03</td>
+<td class="px-4 py-3 text-right">235.40</td>
+<td class="px-4 py-3 text-right font-semibold">613.49</td>
+<td class="px-4 py-3 text-right">55.59</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="蒙自">
+<td class="px-4 py-3 font-medium text-blue-600">蒙自</td>
+<td class="px-4 py-3 text-right">197.04</td>
+<td class="px-4 py-3 text-right">693.27</td>
+<td class="px-4 py-3 text-right">76.55</td>
+<td class="px-4 py-3 text-right font-semibold">966.86</td>
+<td class="px-4 py-3 text-right">163.57</td>
+</tr>
+<tr class="hero_banner_row border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-200" data-district="金平">
+<td class="px-4 py-3 font-medium text-blue-600">金平</td>
+<td class="px-4 py-3 text-right">245.98</td>
+<td class="px-4 py-3 text-right">0.00</td>
+<td class="px-4 py-3 text-right">115.01</td>
+<td class="px-4 py-3 text-right font-semibold">360.99</td>
+<td class="px-4 py-3 text-right">4.42</td>
+</tr>
+<tr class="hero_banner_row bg-blue-100 border-b border-gray-200 hover:bg-blue-200 cursor-pointer transition-colors duration-200" data-district="总计">
+<td class="px-4 py-3 font-bold text-blue-800">总计</td>
+<td class="px-4 py-3 text-right font-bold text-blue-800">2408.42</td>
+<td class="px-4 py-3 text-right font-bold text-blue-800">1375.58</td>
+<td class="px-4 py-3 text-right font-bold text-blue-800">997.68</td>
+<td class="px-4 py-3 text-right font-bold text-blue-800">4781.68</td>
+<td class="px-4 py-3 text-right font-bold text-blue-800">412.31</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="hero_banner_detail_panel" class="hidden max-w-5xl mx-auto mt-6 bg-white rounded-xl shadow-lg p-6">
+<h3 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-info-circle text-blue-500 mr-2"></i><span id="hero_banner_detail_title">区县详情</span></h3>
+<div id="hero_banner_detail_content" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+</div>
+</div>
+</div>
+</section>
+
+<section id="footer_info" class="py-8 bg-gray-800 text-white">
+<div class="container mx-auto px-4 text-center">
+<p class="text-gray-400 text-sm">© 2026 电信共享移动统计报告 | 数据来源：电信共享移动统计汇总.xlsx</p>
+<p class="text-gray-500 text-xs mt-2">基于Excel汇总数据的H5统计报告</p>
+</div>
+</section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<script>
+const hero_banner_districtData = {
+'个旧': {sign: 146.98, exchange: 0, newApply: 105.85, total: 252.83, amount: 13.78},
+'元阳': {sign: 186.83, exchange: 110.5, newApply: 72.18, total: 369.51, amount: 33.64},
+'屏边': {sign: 221.61, exchange: 0, newApply: 17.10, total: 238.71, amount: 3.10},
+'建水': {sign: 135.43, exchange: 8.52, newApply: 89.55, total: 233.50, amount: 2.30},
+'开远': {sign: 169.61, exchange: 0, newApply: 4.01, total: 173.62, amount: 0.85},
+'弥勒': {sign: 328.21, exchange: 0, newApply: 34.19, total: 362.40, amount: 7.26},
+'河口': {sign: 106.72, exchange: 39.00, newApply: 157.61, total: 303.33, amount: 36.95},
+'泸西': {sign: 101.43, exchange: 69.50, newApply: 13.90, total: 184.83, amount: 17.72},
+'石屏': {sign: 177.71, exchange: 175.10, newApply: 64.34, total: 417.15, amount: 50.88},
+'红河': {sign: 199.81, exchange: 92.67, newApply: 0.00, total: 292.48, amount: 19.69},
+'红河县': {sign: 0.00, exchange: 0, newApply: 12.00, total: 12.00, amount: 2.55},
+'绿春': {sign: 191.06, exchange: 187.03, newApply: 235.40, total: 613.49, amount: 55.59},
+'蒙自': {sign: 197.04, exchange: 693.27, newApply: 76.55, total: 966.86, amount: 163.57},
+'金平': {sign: 245.98, exchange: 0, newApply: 115.01, total: 360.99, amount: 4.42},
+'总计': {sign: 2408.42, exchange: 1375.58, newApply: 997.68, total: 4781.68, amount: 412.31}
+};
+
+let hero_banner_chart;
+let hero_banner_currentView = 'district';
+
+function hero_banner_initChart() {
+const chartDom = document.getElementById('hero_banner_chart');
+hero_banner_chart = echarts.init(chartDom);
+hero_banner_renderDistrictChart();
+window.addEventListener('resize', function() {
+hero_banner_chart.resize();
+});
+}
+
+function hero_banner_renderDistrictChart() {
+const districts = ['个旧', '元阳', '屏边', '建水', '开远', '弥勒', '河口', '泸西', '石屏', '红河', '红河县', '绿春', '蒙自', '金平'];
+const totals = [252.83, 369.51, 238.71, 233.50, 173.62, 362.40, 303.33, 184.83, 417.15, 292.48, 12.00, 613.49, 966.86, 360.99];
+
+const option = {
+tooltip: {
+trigger: 'axis',
+axisPointer: {type: 'shadow'}
+},
+grid: {
+left: '3%',
+right: '4%',
+bottom: '3%',
+containLabel: true
+},
+xAxis: {
+type: 'value',
+axisLabel: {formatter: '{value}'}
+},
+yAxis: {
+type: 'category',
+data: districts,
+axisLabel: {interval: 0, fontSize: 11}
+},
+series: [{
+name: '公里数',
+type: 'bar',
+data: totals,
+itemStyle: {
+color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+{offset: 0, color: '#1890ff'},
+{offset: 1, color: '#096dd9'}
+])
+},
+barWidth: '60%',
+label: {
+show: true,
+position: 'right',
+formatter: '{c} km'
+}
+}]
+};
+hero_banner_chart.setOption(option);
+}
+
+function hero_banner_renderTypeChart() {
+const option = {
+tooltip: {
+trigger: 'item',
+formatter: '{b}: {c} km ({d}%)'
+},
+legend: {
+orient: 'vertical',
+left: 'left',
+top: 'center'
+},
+series: [{
+name: '类型分布',
+type: 'pie',
+radius: ['40%', '70%'],
+avoidLabelOverlap: false,
+itemStyle: {
+borderRadius: 10,
+borderColor: '#fff',
+borderWidth: 2
+},
+label: {
+show: true,
+formatter: '{b}: {c} km\n{d}%'
+},
+emphasis: {
+label: {
+show: true,
+fontSize: 16,
+fontWeight: 'bold'
+}
+},
+data: [
+{value: 2408.42, name: '签订', itemStyle: {color: '#1890ff'}},
+{value: 1375.58, name: '置换', itemStyle: {color: '#fa8c16'}},
+{value: 997.68, name: '新增-申请中', itemStyle: {color: '#52c41a'}}
+]
+}]
+};
+hero_banner_chart.setOption(option);
+}
+
+document.getElementById('hero_banner_btn_district').addEventListener('click', function() {
+hero_banner_currentView = 'district';
+this.classList.remove('bg-gray-200', 'text-gray-600');
+this.classList.add('bg-blue-500', 'text-white');
+document.getElementById('hero_banner_btn_type').classList.remove('bg-blue-500', 'text-white');
+document.getElementById('hero_banner_btn_type').classList.add('bg-gray-200', 'text-gray-600');
+hero_banner_renderDistrictChart();
+});
+
+document.getElementById('hero_banner_btn_type').addEventListener('click', function() {
+hero_banner_currentView = 'type';
+this.classList.remove('bg-gray-200', 'text-gray-600');
+this.classList.add('bg-blue-500', 'text-white');
+document.getElementById('hero_banner_btn_district').classList.remove('bg-blue-500', 'text-white');
+document.getElementById('hero_banner_btn_district').classList.add('bg-gray-200', 'text-gray-600');
+hero_banner_renderTypeChart();
+});
+
+document.querySelectorAll('.hero_banner_row').forEach(function(row) {
+row.addEventListener('click', function() {
+const district = this.getAttribute('data-district');
+const data = hero_banner_districtData[district];
+if (data) {
+document.getElementById('hero_banner_detail_title').textContent = district + ' 详细数据';
+const content = document.getElementById('hero_banner_detail_content');
+content.innerHTML = '
+<div class="bg-blue-50 p-4 rounded-lg">
+<div class="text-gray-500 text-xs">签订公里</div>
+<div class="text-xl font-bold text-blue-600">' + data.sign.toFixed(2) + '</div>
+<div class="text-gray-400 text-xs">公里</div>
+</div>
+<div class="bg-orange-50 p-4 rounded-lg">
+<div class="text-gray-500 text-xs">置换公里</div>
+<div class="text-xl font-bold text-orange-600">' + data.exchange.toFixed(2) + '</div>
+<div class="text-gray-400 text-xs">公里</div>
+</div>
+<div class="bg-green-50 p-4 rounded-lg">
+<div class="text-gray-500 text-xs">新增-申请中</div>
+<div class="text-xl font-bold text-green-600">' + data.newApply.toFixed(2) + '</div>
+<div class="text-gray-400 text-xs">公里</div>
+</div>
+<div class="bg-purple-50 p-4 rounded-lg">
+<div class="text-gray-500 text-xs">金额合计</div>
+<div class="text-xl font-bold text-purple-600">' + data.amount.toFixed(2) + '</div>
+<div class="text-gray-400 text-xs">万元</div>
+</div>
+';
+document.getElementById('hero_banner_detail_panel').classList.remove('hidden');
+document.getElementById('hero_banner_detail_panel').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+});
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+hero_banner_initChart();
+});
+</script>
+<style>
+.glassmorphism {
+background: rgba(255, 255, 255, 0.15);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.2);
+box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+.card-hover {
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+transform: translateY(-5px);
+box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+}
+</style>
+
+<section id="nav_header" class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center">
+            <i class="fas fa-tower-cell text-blue-600 text-2xl mr-2"></i>
+            <span class="font-bold text-gray-800 text-lg">电信共享移动统计</span>
+        </div>
+        <nav class="hidden md:flex space-x-4">
+            <a href="#hero_banner" class="text-gray-600 hover:text-blue-600 transition">首页</a>
+            <a href="#stats_cards" class="text-gray-600 hover:text-blue-600 transition">核心指标</a>
+            <a href="#data_visualization" class="text-gray-600 hover:text-blue-600 transition">数据分析</a>
+            <a href="#detail_table" class="text-gray-600 hover:text-blue-600 transition">详细数据</a>
+        </nav>
+        <button class="md:hidden text-gray-600" onclick="document.getElementById('mobile_menu').classList.toggle('hidden')">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </div>
+    <div id="mobile_menu" class="hidden md:hidden bg-white border-t">
+        <a href="#hero_banner" class="block px-4 py-2 text-gray-600 hover:bg-gray-50">首页</a>
+        <a href="#stats_cards" class="block px-4 py-2 text-gray-600 hover:bg-gray-50">核心指标</a>
+        <a href="#data_visualization" class="block px-4 py-2 text-gray-600 hover:bg-gray-50">数据分析</a>
+        <a href="#detail_table" class="block px-4 py-2 text-gray-600 hover:bg-gray-50">详细数据</a>
+    </div>
+</section>
+
+<section id="hero_banner" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16 px-4">
+    <div class="container mx-auto text-center">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 animate__animated animate__fadeIn">电信共享移动统计汇总</h1>
+        <p class="text-blue-100 text-lg mb-6 animate__animated animate__fadeIn animate__delay-1s">实时掌握各区县共享移动资源分布情况</p>
+        <div class="flex justify-center space-x-4 animate__animated animate__fadeIn animate__delay-2s">
+            <span class="bg-white/20 px-4 py-2 rounded-full text-sm">
+                <i class="fas fa-calendar-alt mr-2"></i>2026年数据
+            </span>
+            <span class="bg-white/20 px-4 py-2 rounded-full text-sm">
+                <i class="fas fa-map-marker-alt mr-2"></i>14个区县
+            </span>
+        </div>
+    </div>
+</section>
+
+<section id="stats_cards" class="container mx-auto px-4 py-12 -mt-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl shadow-xl p-8 text-white transform hover:scale-105 transition-transform duration-300 animate__animated animate__fadeInUp">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-road text-2xl"></i>
+                </div>
+                <span class="bg-white/20 px-3 py-1 rounded-full text-sm">总公里数</span>
+            </div>
+            <div class="text-center">
+                <div id="stats_cards_km" class="text-5xl font-bold mb-2">0</div>
+                <div class="text-blue-100 text-lg">公里</div>
+            </div>
+            <div class="mt-6 flex justify-between text-sm text-blue-100">
+                <span><i class="fas fa-arrow-up mr-1"></i>较上月</span>
+                <span>+12.5%</span>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl shadow-xl p-8 text-white transform hover:scale-105 transition-transform duration-300 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-yen-sign text-2xl"></i>
+                </div>
+                <span class="bg-white/20 px-3 py-1 rounded-full text-sm">总金额</span>
+            </div>
+            <div class="text-center">
+                <div id="stats_cards_money" class="text-5xl font-bold mb-2">0</div>
+                <div class="text-orange-100 text-lg">万元</div>
+            </div>
+            <div class="mt-6 flex justify-between text-sm text-orange-100">
+                <span><i class="fas fa-arrow-up mr-1"></i>较上月</span>
+                <span>+8.3%</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="data_visualization" class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
+                <i class="fas fa-chart-bar text-blue-600 mr-3"></i>数据可视化分析
+            </h2>
+            <div class="flex space-x-2">
+                <button id="stats_cards_btn_district" class="stats_cards_tab-btn px-4 py-2 rounded-lg bg-blue-600 text-white transition" onclick="stats_cards_switchChart('district')">
+                    <i class="fas fa-list mr-1"></i>按区县
+                </button>
+                <button id="stats_cards_btn_type" class="stats_cards_tab-btn px-4 py-2 rounded-lg bg-gray-200 text-gray-600 transition" onclick="stats_cards_switchChart('type')">
+                    <i class="fas fa-chart-pie mr-1"></i>按类型
+                </button>
+            </div>
+        </div>
+        <div id="stats_cards_chart_district" class="chart-container" style="height: 400px;"></div>
+        <div id="stats_cards_chart_type" class="chart-container hidden" style="height: 400px;"></div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 animate__animated animate__fadeInUp">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-4">
+                    <i class="fas fa-file-signature text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800">签订</h3>
+                    <p class="text-sm text-gray-500">已签订协议</p>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-gray-800 mb-1">2408.42 km</div>
+            <div class="text-sm text-gray-500">0 万元</div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mr-4">
+                    <i class="fas fa-exchange-alt text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800">置换</h3>
+                    <p class="text-sm text-gray-500">资源置换</p>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-gray-800 mb-1">1375.58 km</div>
+            <div class="text-sm text-gray-500">292.29 万元</div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 animate__animated animate__fadeInUp animate__delay-2s">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 mr-4">
+                    <i class="fas fa-plus-circle text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800">新增-申请中</h3>
+                    <p class="text-sm text-gray-500">待审批</p>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-gray-800 mb-1">997.68 km</div>
+            <div class="text-sm text-gray-500">120.02 万元</div>
+        </div>
+    </div>
+</section>
+
+<section id="detail_table" class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="p-6 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-table text-blue-600 mr-3"></i>详细数据表格
+            </h2>
+            <p class="text-gray-500 mt-2">点击区县可查看详细数据</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 sticky top-0">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">区县</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签订(km)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">置换(km)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">新增(km)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">合计(km)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额(万元)</th>
+                    </tr>
+                </thead>
+                <tbody id="stats_cards_table_body" class="bg-white divide-y divide-gray-200">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="footer_info" class="bg-gray-800 text-white py-8 px-4 mt-8">
+    <div class="container mx-auto text-center">
+        <div class="flex justify-center items-center mb-4">
+            <i class="fas fa-tower-cell text-blue-400 text-2xl mr-2"></i>
+            <span class="font-bold text-xl">电信共享移动统计</span>
+        </div>
+        <p class="text-gray-400 mb-4">数据来源：电信共享移动统计汇总.xlsx</p>
+        <p class="text-gray-500 text-sm">© 2026 电信共享移动统计系统. All rights reserved.</p>
+    </div>
+</section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+
+<script>
+const stats_cards_districtData = [
+    {name: '个旧', value: 252.83, sign: 146.98, exchange: 0, new: 105.85, money: 13.78},
+    {name: '元阳', value: 369.51, sign: 186.83, exchange: 110.5, new: 72.18, money: 33.64},
+    {name: '屏边', value: 238.71, sign: 221.61, exchange: 0, new: 17.10, money: 3.10},
+    {name: '建水', value: 233.50, sign: 135.43, exchange: 8.52, new: 89.55, money: 2.30},
+    {name: '开远', value: 173.62, sign: 169.61, exchange: 0, new: 4.01, money: 0.85},
+    {name: '弥勒', value: 362.40, sign: 328.21, exchange: 0, new: 34.19, money: 7.26},
+    {name: '河口', value: 303.33, sign: 106.72, exchange: 39.00, new: 157.61, money: 36.95},
+    {name: '泸西', value: 184.83, sign: 101.43, exchange: 69.50, new: 13.90, money: 17.72},
+    {name: '石屏', value: 417.15, sign: 177.71, exchange: 175.10, new: 64.34, money: 50.88},
+    {name: '红河', value: 292.48, sign: 199.81, exchange: 92.67, new: 0.00, money: 19.69},
+    {name: '红河县', value: 12.00, sign: 0.00, exchange: 0, new: 12.00, money: 2.55},
+    {name: '绿春', value: 613.49, sign: 191.06, exchange: 187.03, new: 235.40, money: 55.59},
+    {name: '蒙自', value: 966.86, sign: 197.04, exchange: 693.27, new: 76.55, money: 163.57},
+    {name: '金平', value: 360.99, sign: 245.98, exchange: 0, new: 115.01, money: 4.42},
+    {name: '总计', value: 4781.68, sign: 2408.42, exchange: 1375.58, new: 997.68, money: 412.31, isTotal: true}
+];
+
+const stats_cards_typeData = [
+    {name: '签订', value: 2408.42, money: 0},
+    {name: '置换', value: 1375.58, money: 292.29},
+    {name: '新增-申请中', value: 997.68, money: 120.02}
+];
+
+let stats_cards_districtChart, stats_cards_typeChart;
+
+function stats_cards_initCharts() {
+    const districtChartDom = document.getElementById('stats_cards_chart_district');
+    stats_cards_districtChart = echarts.init(districtChartDom);
+    
+    const districtOption = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {type: 'shadow'}
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'value',
+            axisLabel: {formatter: '{value} km'}
+        },
+        yAxis: {
+            type: 'category',
+            data: stats_cards_districtData.filter(d => !d.isTotal).map(d => d.name),
+            inverse: true
+        },
+        series: [{
+            name: '公里数',
+            type: 'bar',
+            data: stats_cards_districtData.filter(d => !d.isTotal).map(d => d.value),
+            itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                    {offset: 0, color: '#1890ff'},
+                    {offset: 1, color: '#096dd9'}
+                ])
+            },
+            label: {
+                show: true,
+                position: 'right',
+                formatter: '{c} km'
+            }
+        }]
+    };
+    stats_cards_districtChart.setOption(districtOption);
+    
+    const typeChartDom = document.getElementById('stats_cards_chart_type');
+    stats_cards_typeChart = echarts.init(typeChartDom);
+    
+    const typeOption = {
+        tooltip: {
+            trigger: 'item',
+            formatter: '{b}: {c} km ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left'
+        },
+        series: [{
+            name: '类型分布',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 2
+            },
+            label: {
+                show: true,
+                formatter: '{b}: {c} km'
+            },
+            data: stats_cards_typeData.map((item, index) => ({
+                value: item.value,
+                name: item.name,
+                itemStyle: {
+                    color: ['#1890ff', '#52c41a', '#fa8c16'][index]
+                }
+            }))
+        }]
+    };
+    stats_cards_typeChart.setOption(typeOption);
+    
+    window.addEventListener('resize', function() {
+        stats_cards_districtChart.resize();
+        stats_cards_typeChart.resize();
+    });
+}
+
+function stats_cards_switchChart(type) {
+    const districtBtn = document.getElementById('stats_cards_btn_district');
+    const typeBtn = document.getElementById('stats_cards_btn_type');
+    const districtChart = document.getElementById('stats_cards_chart_district');
+    const typeChart = document.getElementById('stats_cards_chart_type');
+    
+    if (type === 'district') {
+        districtBtn.classList.remove('bg-gray-200', 'text-gray-600');
+        districtBtn.classList.add('bg-blue-600', 'text-white');
+        typeBtn.classList.remove('bg-blue-600', 'text-white');
+        typeBtn.classList.add('bg-gray-200', 'text-gray-600');
+        districtChart.classList.remove('hidden');
+        typeChart.classList.add('hidden');
+    } else {
+        typeBtn.classList.remove('bg-gray-200', 'text-gray-600');
+        typeBtn.classList.add('bg-blue-600', 'text-white');
+        districtBtn.classList.remove('bg-blue-600', 'text-white');
+        districtBtn.classList.add('bg-gray-200', 'text-gray-600');
+        typeChart.classList.remove('hidden');
+        districtChart.classList.add('hidden');
+    }
+}
+
+function stats_cards_animateNumber(element, target, duration) {
+    let start = 0;
+    const increment = target / (duration / 16);
+    const timer = setInterval(function() {
+        start += increment;
+        if (start >= target) {
+            element.textContent = target.toFixed(2);
+            clearInterval(timer);
+        } else {
+            element.textContent = start.toFixed(2);
+        }
+    }, 16);
+}
+
+function stats_cards_initTable() {
+    const tbody = document.getElementById('stats_cards_table_body');
+    stats_cards_districtData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+        tr.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <button class="font-medium text-blue-600 hover:text-blue-800 flex items-center" onclick="stats_cards_toggleDetail(this)">
+                    <i class="fas fa-chevron-right mr-2 transform transition-transform"></i>
+                    ${row.name}
+                </button>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-gray-600">${row.sign.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-gray-600">${row.exchange.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-gray-600">${row.new.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-800">${row.value.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-orange-600 font-medium">${row.money.toFixed(2)}</td>
+        `;
+        
+        const detailTr = document.createElement('tr');
+        detailTr.className = 'hidden bg-blue-50';
+        detailTr.innerHTML = `
+            <td colspan="6" class="px-6 py-4">
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div class="bg-white p-3 rounded-lg shadow-sm">
+                        <div class="text-gray-500 mb-1">签订详情</div>
+                        <div class="font-medium">${row.sign.toFixed(2)} km</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-sm">
+                        <div class="text-gray-500 mb-1">置换详情</div>
+                        <div class="font-medium">${row.exchange.toFixed(2)} km</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-sm">
+                        <div class="text-gray-500 mb-1">新增详情</div>
+                        <div class="font-medium">${row.new.toFixed(2)} km</div>
+                    </div>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+        tbody.appendChild(detailTr);
+    });
+}
+
+function stats_cards_toggleDetail(btn) {
+    const icon = btn.querySelector('.fa-chevron-right');
+    const detailRow = btn.closest('tr').nextElementSibling;
+    
+    icon.classList.toggle('rotate-90');
+    detailRow.classList.toggle('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    stats_cards_initCharts();
+    stats_cards_initTable();
+    
+    setTimeout(function() {
+        stats_cards_animateNumber(document.getElementById('stats_cards_km'), 4781.68, 2000);
+        stats_cards_animateNumber(document.getElementById('stats_cards_money'), 412.31, 2000);
+    }, 500);
+});
+</script>
+
+<section id="detail_table" class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    
+    <nav id="nav_header" class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                <span class="font-bold text-gray-800 text-lg">电信共享移动统计</span>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#stats_cards" class="text-gray-600 hover:text-blue-600 transition-colors text-sm">指标</a>
+                <a href="#data_visualization" class="text-gray-600 hover:text-blue-600 transition-colors text-sm">分析</a>
+                <a href="#detail_table" class="text-gray-600 hover:text-blue-600 transition-colors text-sm">详情</a>
+            </div>
+        </div>
+    </nav>
+
+    
+    <header id="hero_banner" class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 px-4">
+        <div class="container mx-auto text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 animate__animated animate__fadeInDown">电信共享移动统计数据</h1>
+            <p class="text-blue-100 text-lg animate__animated animate__fadeInUp">展示14个区县的详细数据统计与分析</p>
+            <div class="mt-6 flex justify-center space-x-4 animate__animated animate__fadeInUp">
+                <span class="bg-white/20 px-4 py-2 rounded-full text-sm">
+                    <i class="fas fa-calendar-alt mr-2"></i>2026年数据
+                </span>
+                <span class="bg-white/20 px-4 py-2 rounded-full text-sm">
+                    <i class="fas fa-map-marker-alt mr-2"></i>红河州
+                </span>
+            </div>
+        </div>
+    </header>
+
+    
+    <section id="stats_cards" class="container mx-auto px-4 -mt-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-300 animate__animated animate__fadeInLeft">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">总公里数</p>
+                        <p class="text-4xl font-bold text-blue-600" id="detail_table_total_km">0</p>
+                        <p class="text-gray-400 text-sm mt-1">公里</p>
+                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-road text-white text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <span class="text-green-500 text-sm"><i class="fas fa-arrow-up mr-1"></i>较上期增长</span>
+                    <span class="text-gray-600 text-sm ml-2">12.5%</span>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-300 animate__animated animate__fadeInRight">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm mb-1">总金额</p>
+                        <p class="text-4xl font-bold text-orange-500" id="detail_table_total_amount">0</p>
+                        <p class="text-gray-400 text-sm mt-1">万元</p>
+                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-yen-sign text-white text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <span class="text-green-500 text-sm"><i class="fas fa-arrow-up mr-1"></i>较上期增长</span>
+                    <span class="text-gray-600 text-sm ml-2">8.3%</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="data_visualization" class="container mx-auto px-4 py-12">
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-pie text-blue-600 mr-3"></i>数据可视化分析
+                </h2>
+                <div class="flex space-x-2 mt-4 md:mt-0">
+                    <button id="detail_table_btn_district" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-chart-bar mr-2"></i>按区县
+                    </button>
+                    <button id="detail_table_btn_type" class="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-chart-pie mr-2"></i>按类型
+                    </button>
+                </div>
+            </div>
+            <div id="detail_table_chart_container" class="w-full h-80"></div>
+        </div>
+    </section>
+
+    
+    <section id="detail_table" class="container mx-auto px-4 pb-12">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-table text-blue-600 mr-3"></i>详细数据表格
+                </h2>
+                <p class="text-gray-500 text-sm mt-2">点击表格行查看详细数据</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[800px]">
+                    <thead class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-semibold">区县</th>
+                            <th class="px-4 py-3 text-right text-sm font-semibold">签订(km)</th>
+                            <th class="px-4 py-3 text-right text-sm font-semibold">置换(km)</th>
+                            <th class="px-4 py-3 text-right text-sm font-semibold">新增-申请中(km)</th>
+                            <th class="px-4 py-3 text-right text-sm font-semibold">公里数合计</th>
+                            <th class="px-4 py-3 text-right text-sm font-semibold">金额合计(万元)</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detail_table_tbody" class="divide-y divide-gray-100">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer id="footer_info" class="bg-gray-800 text-white py-8 px-4">
+        <div class="container mx-auto text-center">
+            <p class="text-gray-400 text-sm">© 2026 电信共享移动统计系统</p>
+            <p class="text-gray-500 text-xs mt-2">数据来源：电信共享移动统计汇总.xlsx</p>
+        </div>
+    </footer>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+    // 数据定义
+    const detail_table_data = [
+        { district: '个旧', sign: 146.98, exchange: 0, newApply: 105.85, totalKm: 252.83, totalAmount: 13.78 },
+        { district: '元阳', sign: 186.83, exchange: 110.5, newApply: 72.18, totalKm: 369.51, totalAmount: 33.64 },
+        { district: '屏边', sign: 221.61, exchange: 0, newApply: 17.10, totalKm: 238.71, totalAmount: 3.10 },
+        { district: '建水', sign: 135.43, exchange: 8.52, newApply: 89.55, totalKm: 233.50, totalAmount: 2.30 },
+        { district: '开远', sign: 169.61, exchange: 0, newApply: 4.01, totalKm: 173.62, totalAmount: 0.85 },
+        { district: '弥勒', sign: 328.21, exchange: 0, newApply: 34.19, totalKm: 362.40, totalAmount: 7.26 },
+        { district: '河口', sign: 106.72, exchange: 39.00, newApply: 157.61, totalKm: 303.33, totalAmount: 36.95 },
+        { district: '泸西', sign: 101.43, exchange: 69.50, newApply: 13.90, totalKm: 184.83, totalAmount: 17.72 },
+        { district: '石屏', sign: 177.71, exchange: 175.10, newApply: 64.34, totalKm: 417.15, totalAmount: 50.88 },
+        { district: '红河', sign: 199.81, exchange: 92.67, newApply: 0.00, totalKm: 292.48, totalAmount: 19.69 },
+        { district: '红河县', sign: 0.00, exchange: 0, newApply: 12.00, totalKm: 12.00, totalAmount: 2.55 },
+        { district: '绿春', sign: 191.06, exchange: 187.03, newApply: 235.40, totalKm: 613.49, totalAmount: 55.59 },
+        { district: '蒙自', sign: 197.04, exchange: 693.27, newApply: 76.55, totalKm: 966.86, totalAmount: 163.57 },
+        { district: '金平', sign: 245.98, exchange: 0, newApply: 115.01, totalKm: 360.99, totalAmount: 4.42 },
+        { district: '总计', sign: 2408.42, exchange: 1375.58, newApply: 997.68, totalKm: 4781.68, totalAmount: 412.31, isTotal: true }
+    ];
+
+    // 数字滚动动画
+    function detail_table_animateNumber(element, target, duration = 1500) {
+        let start = 0;
+        const increment = target / (duration / 16);
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                element.textContent = target.toFixed(2);
+                clearInterval(timer);
+            } else {
+                element.textContent = start.toFixed(2);
+            }
+        }, 16);
+    }
+
+    // 初始化数字动画
+    document.addEventListener('DOMContentLoaded', function() {
+        detail_table_animateNumber(document.getElementById('detail_table_total_km'), 4781.68);
+        detail_table_animateNumber(document.getElementById('detail_table_total_amount'), 412.31);
+    });
+
+    // 渲染表格
+    function detail_table_renderTable() {
+        const tbody = document.getElementById('detail_table_tbody');
+        tbody.innerHTML = '';
+        
+        detail_table_data.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            tr.className = row.isTotal ? 'bg-blue-50 font-bold' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
+            tr.style.cursor = 'pointer';
+            tr.dataset.index = index;
+            
+            tr.innerHTML = `
+                <td class="px-4 py-3 text-sm ${row.isTotal ? 'text-blue-700' : 'text-gray-700'}">${row.district}</td>
+                <td class="px-4 py-3 text-sm text-right text-gray-600">${row.sign.toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-right text-gray-600">${row.exchange.toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-right text-gray-600">${row.newApply.toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-right font-medium ${row.isTotal ? 'text-blue-700' : 'text-gray-800'}">${row.totalKm.toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-right font-medium ${row.isTotal ? 'text-blue-700' : 'text-orange-600'}">${row.totalAmount.toFixed(2)}</td>
+                <td class="px-4 py-3 text-center">
+                    <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="event.stopPropagation(); detail_table_toggleDetail(${index})">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </td>
+            `;
+            
+            tr.addEventListener('click', () => detail_table_toggleDetail(index));
+            tbody.appendChild(tr);
+            
+            // 添加详情行
+            const detailTr = document.createElement('tr');
+            detailTr.id = `detail_row_${index}`;
+            detailTr.className = 'hidden bg-gray-100';
+            detailTr.innerHTML = `
+                <td colspan="7" class="px-4 py-4">
+                    <div class="bg-white rounded-lg p-4 shadow-inner">
+                        <h4 class="font-semibold text-gray-800 mb-3"><i class="fas fa-info-circle text-blue-600 mr-2"></i>${row.district} 详细数据</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50 rounded-lg p-3">
+                                <p class="text-xs text-gray-500">签订</p>
+                                <p class="text-lg font-bold text-blue-600">${row.sign.toFixed(2)} km</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-3">
+                                <p class="text-xs text-gray-500">置换</p>
+                                <p class="text-lg font-bold text-green-600">${row.exchange.toFixed(2)} km</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-lg p-3">
+                                <p class="text-xs text-gray-500">新增-申请中</p>
+                                <p class="text-lg font-bold text-orange-600">${row.newApply.toFixed(2)} km</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-3">
+                                <p class="text-xs text-gray-500">金额</p>
+                                <p class="text-lg font-bold text-purple-600">${row.totalAmount.toFixed(2)} 万元</p>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(detailTr);
+        });
+    }
+
+    // 切换详情显示
+    function detail_table_toggleDetail(index) {
+        const detailRow = document.getElementById(`detail_row_${index}`);
+        const icon = document.querySelector(`tr[data-index="${index}"] .fa-chevron-down`);
+        
+        if (detailRow.classList.contains('hidden')) {
+            detailRow.classList.remove('hidden');
+            detailRow.classList.add('animate__animated', 'animate__fadeIn');
+            icon.classList.add('rotate-180');
+        } else {
+            detailRow.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+
+    // 初始化表格
+    detail_table_renderTable();
+
+    // ECharts图表
+    let detail_table_chart = echarts.init(document.getElementById('detail_table_chart_container'));
+    let detail_table_currentView = 'district';
+
+    const detail_table_districtOption = {
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'value', boundaryGap: [0, 0.01] },
+        yAxis: { type: 'category', data: detail_table_data.filter(d => !d.isTotal).map(d => d.district) },
+        series: [{
+            name: '公里数',
+            type: 'bar',
+            data: detail_table_data.filter(d => !d.isTotal).map(d => d.totalKm),
+            itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                    { offset: 0, color: '#1890ff' },
+                    { offset: 1, color: '#096dd9' }
+                ])
+            },
+            label: { show: true, position: 'right', formatter: '{c} km' }
+        }]
+    };
+
+    const detail_table_typeOption = {
+        tooltip: { trigger: 'item', formatter: '{b}: {c} km ({d}%)' },
+        legend: { orient: 'vertical', left: 'left', top: 'center' },
+        series: [{
+            name: '类型分布',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            avoidLabelOverlap: false,
+            itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+            label: { show: false, position: 'center' },
+            emphasis: { label: { show: true, fontSize: 20, fontWeight: 'bold' } },
+            labelLine: { show: false },
+            data: [
+                { value: 2408.42, name: '签订', itemStyle: { color: '#1890ff' } },
+                { value: 1375.58, name: '置换', itemStyle: { color: '#52c41a' } },
+                { value: 997.68, name: '新增-申请中', itemStyle: { color: '#fa8c16' } }
+            ]
+        }]
+    };
+
+    detail_table_chart.setOption(detail_table_districtOption);
+
+    // 切换按钮事件
+    document.getElementById('detail_table_btn_district').addEventListener('click', function() {
+        detail_table_currentView = 'district';
+        this.classList.remove('bg-gray-200', 'text-gray-600');
+        this.classList.add('bg-blue-600', 'text-white');
+        document.getElementById('detail_table_btn_type').classList.remove('bg-blue-600', 'text-white');
+        document.getElementById('detail_table_btn_type').classList.add('bg-gray-200', 'text-gray-600');
+        detail_table_chart.setOption(detail_table_districtOption);
+    });
+
+    document.getElementById('detail_table_btn_type').addEventListener('click', function() {
+        detail_table_currentView = 'type';
+        this.classList.remove('bg-gray-200', 'text-gray-600');
+        this.classList.add('bg-blue-600', 'text-white');
+        document.getElementById('detail_table_btn_district').classList.remove('bg-blue-600', 'text-white');
+        document.getElementById('detail_table_btn_district').classList.add('bg-gray-200', 'text-gray-600');
+        detail_table_chart.setOption(detail_table_typeOption);
+    });
+
+    // 响应式调整
+    window.addEventListener('resize', function() {
+        detail_table_chart.resize();
+    });
+</script>
+
+<section id="footer_info" class="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    
+    <nav id="nav_header" class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                <span class="font-bold text-gray-800 text-lg">电信共享移动统计</span>
+            </div>
+            <div class="text-xs text-gray-500 hidden sm:block">2026年数据</div>
+        </div>
+    </nav>
+
+    
+    <header id="hero_banner" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-8 px-4">
+        <div class="container mx-auto text-center animate__animated animate__fadeIn">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">电信共享移动统计汇总</h1>
+            <p class="text-blue-200 text-sm">展示各区县共享移动数据统计与分析</p>
+        </div>
+    </header>
+
+    
+    <section id="stats_cards" class="container mx-auto px-4 -mt-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl shadow-lg p-5 animate__animated animate__fadeInUp" style="animation-delay: 0.1s">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-500 text-sm">总公里数</span>
+                    <i class="fas fa-road text-blue-500"></i>
+                </div>
+                <div class="text-2xl md:text-3xl font-bold text-blue-600" id="total_km">0</div>
+                <div class="text-gray-400 text-xs mt-1">公里</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-5 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-500 text-sm">总金额</span>
+                    <i class="fas fa-yen-sign text-orange-500"></i>
+                </div>
+                <div class="text-2xl md:text-3xl font-bold text-orange-500" id="total_amount">0</div>
+                <div class="text-gray-400 text-xs mt-1">万元</div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="data_visualization" class="container mx-auto px-4 mt-8">
+        <div class="bg-white rounded-xl shadow-lg p-4">
+            <div class="flex justify-center space-x-4 mb-4">
+                <button id="btn_by_district" class="px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all hover:bg-blue-700">
+                    <i class="fas fa-chart-bar mr-1"></i>按区县
+                </button>
+                <button id="btn_by_type" class="px-4 py-2 rounded-full bg-gray-200 text-gray-600 text-sm font-medium transition-all hover:bg-gray-300">
+                    <i class="fas fa-chart-pie mr-1"></i>按类型
+                </button>
+            </div>
+            <div id="chart_container" class="w-full h-80"></div>
+        </div>
+    </section>
+
+    
+    <section id="detail_table" class="container mx-auto px-4 mt-8 pb-8">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-list-alt text-blue-600 mr-2"></i>详细数据
+                </h3>
+            </div>
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-gray-600 font-semibold">区县</th>
+                            <th class="px-4 py-3 text-right text-gray-600 font-semibold">签订</th>
+                            <th class="px-4 py-3 text-right text-gray-600 font-semibold">置换</th>
+                            <th class="px-4 py-3 text-right text-gray-600 font-semibold">新增</th>
+                            <th class="px-4 py-3 text-right text-gray-600 font-semibold">合计</th>
+                            <th class="px-4 py-3 text-right text-gray-600 font-semibold">金额</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table_body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="bg-gray-50 py-8 text-center text-gray-500 text-sm">
+        <div class="container mx-auto px-4">
+            <p class="font-medium">© 2024 电信共享移动统计</p>
+            <p class="mt-1">数据来源：电信共享移动统计汇总.xlsx</p>
+            <p class="mt-1">页面内容均由 AI 生成，仅供参考</p>
+        </div>
+    </footer>
+</section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+    // 数据定义
+    const districtData = [
+        { name: '个旧', sign: 146.98, exchange: 0, new: 105.85, total: 252.83, amount: 13.78 },
+        { name: '元阳', sign: 186.83, exchange: 110.5, new: 72.18, total: 369.51, amount: 33.64 },
+        { name: '屏边', sign: 221.61, exchange: 0, new: 17.10, total: 238.71, amount: 3.10 },
+        { name: '建水', sign: 135.43, exchange: 8.52, new: 89.55, total: 233.50, amount: 2.30 },
+        { name: '开远', sign: 169.61, exchange: 0, new: 4.01, total: 173.62, amount: 0.85 },
+        { name: '弥勒', sign: 328.21, exchange: 0, new: 34.19, total: 362.40, amount: 7.26 },
+        { name: '河口', sign: 106.72, exchange: 39.00, new: 157.61, total: 303.33, amount: 36.95 },
+        { name: '泸西', sign: 101.43, exchange: 69.50, new: 13.90, total: 184.83, amount: 17.72 },
+        { name: '石屏', sign: 177.71, exchange: 175.10, new: 64.34, total: 417.15, amount: 50.88 },
+        { name: '红河', sign: 199.81, exchange: 92.67, new: 0.00, total: 292.48, amount: 19.69 },
+        { name: '红河县', sign: 0.00, exchange: 0, new: 12.00, total: 12.00, amount: 2.55 },
+        { name: '绿春', sign: 191.06, exchange: 187.03, new: 235.40, total: 613.49, amount: 55.59 },
+        { name: '蒙自', sign: 197.04, exchange: 693.27, new: 76.55, total: 966.86, amount: 163.57 },
+        { name: '金平', sign: 245.98, exchange: 0, new: 115.01, total: 360.99, amount: 4.42 }
+    ];
+
+    const typeData = [
+        { name: '签订', value: 2408.42, amount: 0, color: '#1890ff' },
+        { name: '置换', value: 1375.58, amount: 292.29, color: '#52c41a' },
+        { name: '新增-申请中', value: 997.68, amount: 120.02, color: '#fa8c16' }
+    ];
+
+    const totalKM = 4781.68;
+    const totalAmount = 412.31;
+
+    // 数字滚动动画
+    function animateNumber(element, target, duration = 1500) {
+        let start = 0;
+        const increment = target / (duration / 16);
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                element.textContent = target.toFixed(2);
+                clearInterval(timer);
+            } else {
+                element.textContent = start.toFixed(2);
+            }
+        }, 16);
+    }
+
+    // 初始化数字动画
+    document.addEventListener('DOMContentLoaded', () => {
+        animateNumber(document.getElementById('total_km'), totalKM);
+        animateNumber(document.getElementById('total_amount'), totalAmount);
+        initChart();
+        renderTable();
+    });
+
+    // 图表实例
+    let chart;
+    let currentView = 'district';
+
+    function initChart() {
+        chart = echarts.init(document.getElementById('chart_container'));
+        renderDistrictChart();
+    }
+
+    function renderDistrictChart() {
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                axisLabel: { formatter: '{value}' }
+            },
+            yAxis: {
+                type: 'category',
+                data: districtData.map(d => d.name),
+                inverse: true
+            },
+            series: [{
+                name: '公里数',
+                type: 'bar',
+                data: districtData.map(d => d.total),
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#1890ff' },
+                        { offset: 1, color: '#096dd9' }
+                    ]),
+                    borderRadius: [0, 4, 4, 0]
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    formatter: '{c} km'
+                }
+            }],
+            animationDuration: 1500,
+            animationEasing: 'cubicOut'
+        };
+        chart.setOption(option);
+    }
+
+    function renderTypeChart() {
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} km ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                top: 'center'
+            },
+            series: [{
+                name: '类型分布',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 10,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: {
+                    show: true,
+                    formatter: '{b}: {c} km'
+                },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                data: typeData.map(d => ({
+                    value: d.value,
+                    name: d.name,
+                    itemStyle: { color: d.color }
+                })),
+                animationType: 'scale',
+                animationDuration: 1500
+            }];
+        };
+        chart.setOption(option);
+    }
+
+    // 切换按钮事件
+    document.getElementById('btn_by_district').addEventListener('click', function() {
+        currentView = 'district';
+        this.classList.remove('bg-gray-200', 'text-gray-600');
+        this.classList.add('bg-blue-600', 'text-white');
+        document.getElementById('btn_by_type').classList.remove('bg-blue-600', 'text-white');
+        document.getElementById('btn_by_type').classList.add('bg-gray-200', 'text-gray-600');
+        renderDistrictChart();
+    });
+
+    document.getElementById('btn_by_type').addEventListener('click', function() {
+        currentView = 'type';
+        this.classList.remove('bg-gray-200', 'text-gray-600');
+        this.classList.add('bg-blue-600', 'text-white');
+        document.getElementById('btn_by_district').classList.remove('bg-blue-600', 'text-white');
+        document.getElementById('btn_by_district').classList.add('bg-gray-200', 'text-gray-600');
+        renderTypeChart();
+    });
+
+    // 渲染表格
+    function renderTable() {
+        const tbody = document.getElementById('table_body');
+        let html = '';
+        districtData.forEach((d, index) => {
+            html += `
+                <tr class="border-b border-gray-50 hover:bg-blue-50 cursor-pointer transition-colors district-row" data-index="${index}">
+                    <td class="px-4 py-3 font-medium text-gray-800">${d.name}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${d.sign.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${d.exchange.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${d.new.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right font-semibold text-blue-600">${d.total.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right font-semibold text-orange-600">${d.amount.toFixed(2)}</td>
+                </tr>
+                <tr class="detail-row hidden" id="detail_${index}">
+                    <td colspan="6" class="px-4 py-3 bg-blue-50">
+                        <div class="flex justify-around text-sm">
+                            <div class="text-center">
+                                <div class="text-gray-500">签订</div>
+                                <div class="font-bold text-blue-600">${d.sign.toFixed(2)} km</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-500">置换</div>
+                                <div class="font-bold text-green-600">${d.exchange.toFixed(2)} km</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-500">新增-申请中</div>
+                                <div class="font-bold text-orange-600">${d.new.toFixed(2)} km</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        // 添加总计行
+        html += `
+            <tr class="bg-gray-100 font-bold">
+                <td class="px-4 py-3 text-gray-800">总计</td>
+                <td class="px-4 py-3 text-right text-gray-800">2408.42</td>
+                <td class="px-4 py-3 text-right text-gray-800">1375.58</td>
+                <td class="px-4 py-3 text-right text-gray-800">997.68</td>
+                <td class="px-4 py-3 text-right text-blue-700">4781.68</td>
+                <td class="px-4 py-3 text-right text-orange-700">412.31</td>
+            </tr>
+        `;
+        tbody.innerHTML = html;
+
+        // 添加点击事件
+        document.querySelectorAll('.district-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                const detailRow = document.getElementById('detail_' + index);
+                detailRow.classList.toggle('hidden');
+            });
+        });
+    }
+
+    // 窗口大小改变时重绘图表
+    window.addEventListener('resize', () => {
+        chart && chart.resize();
+    });
+</script>
+</body>
+
+<script>
+    // 强制所有锚点在当前 iframe 内滚动
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('a[href^="#"]');
+        if (link) {
+            e.preventDefault();
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({behavior: 'smooth'});
+            }
+        }
+    });
+</script>
+
+</html>
