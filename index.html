@@ -2,147 +2,180 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>电信共享移动统计</title>
     <script src="https://cdn.tailwindcss.com/3.3.3"></script>
     <link href="https://cdn.staticfile.org/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.staticfile.org/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        body { font-family: "Noto Sans SC", sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #e8f4f8 100%); }
-        .glass { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); }
-        .card { transition: all 0.3s ease; }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .nav-blur { backdrop-filter: blur(20px); }
-        .wave-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: white; border-radius: 50% 50% 0 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        * { -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Noto Sans SC', sans-serif; 
+            background: #f8fafc;
+            overscroll-behavior-y: none;
+        }
+        
+        /* 扁平化卡片 */
+        .flat-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .flat-card:active {
+            transform: scale(0.98);
+        }
+        
+        /* 导航栏 */
+        .top-nav {
+            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        }
+        
+        /* 数字动画 */
+        .counter {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* 表格 */
+        .data-row {
+            transition: background-color 0.2s;
+        }
+        
+        .data-row:active {
+            background-color: #f1f5f9;
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 安全区域适配 */
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-8">
 
 <!-- 顶部导航 -->
-<nav class="fixed top-0 left-0 right-0 z-50 nav-blur bg-white/80 border-b border-gray-100">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm top-nav">
+    <div class="flex items-center justify-between px-4 py-3">
         <div class="flex items-center">
-            <i class="fas fa-tower-cell text-blue-600 text-xl mr-2"></i>
-            <span class="font-bold text-gray-800">电信共享移动统计</span>
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-2">
+                <i class="fas fa-chart-pie text-white text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800 text-sm">电信共享统计</span>
         </div>
-        <div class="hidden md:flex space-x-6 text-sm">
-            <a href="#overview" class="text-gray-600 hover:text-blue-600 transition">总览</a>
-            <a href="#charts" class="text-gray-600 hover:text-blue-600 transition">图表</a>
-            <a href="#table" class="text-gray-600 hover:text-blue-600 transition">数据</a>
-        </div>
+        <div class="text-xs text-gray-400">2026</div>
     </div>
 </nav>
 
-<!-- 顶部横幅 -->
-<section id="overview" class="pt-24 pb-16 px-4 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white">
-    <div class="container mx-auto text-center">
-        <h1 class="text-2xl md:text-3xl font-bold mb-2 animate__animated animate__fadeInDown">电信共享移动统计</h1>
-        <p class="text-blue-100 text-sm mb-4">2026年度 · 14个区县</p>
-        <div class="flex justify-center gap-3">
-            <span class="bg-white/20 px-3 py-1 rounded-full text-xs"><i class="fas fa-calendar-alt mr-1"></i>2026-05-25</span>
-            <span class="bg-white/20 px-3 py-1 rounded-full text-xs"><i class="fas fa-building mr-1"></i>红河州</span>
-        </div>
-    </div>
-    <div class="wave-bottom"></div>
-</section>
+<!-- 主内容区 -->
+<main class="pt-14">
 
-<!-- 核心指标卡片 -->
-<section class="px-4 -mt-6">
-    <div class="container mx-auto">
-        <div class="grid grid-cols-2 gap-4 max-w-3xl mx-auto">
-            <div class="glass card p-5 shadow-lg">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs text-gray-500">总公里数</span>
-                    <i class="fas fa-road text-blue-500"></i>
+    <!-- 顶部大卡片 -->
+    <section class="px-4 pt-4">
+        <div class="flat-card p-5 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <div class="text-blue-100 text-xs mb-1">共享资源总规模</div>
+                    <div class="flex items-baseline">
+                        <span class="text-4xl font-bold counter" id="totalKm">0</span>
+                        <span class="text-blue-200 ml-1 text-sm">公里</span>
+                    </div>
                 </div>
-                <div class="text-3xl font-bold text-gray-800" id="totalKm">0</div>
-                <div class="text-xs text-gray-400">公里</div>
+                <div class="text-right">
+                    <div class="text-blue-100 text-xs">累计金额</div>
+                    <div class="flex items-baseline justify-end">
+                        <span class="text-2xl font-bold counter" id="totalAmount">0</span>
+                        <span class="text-blue-200 ml-1 text-sm">万</span>
+                    </div>
+                </div>
             </div>
-            <div class="glass card p-5 shadow-lg">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs text-gray-500">总金额</span>
-                    <i class="fas fa-yen-sign text-orange-500"></i>
-                </div>
-                <div class="text-3xl font-bold text-gray-800" id="totalAmount">0</div>
-                <div class="text-xs text-gray-400">万元</div>
+            <div class="flex justify-between text-xs text-blue-200">
+                <span><i class="fas fa-layer-group mr-1"></i>13个区县</span>
+                <span><i class="fas fa-clock mr-1"></i>2026-05-25</span>
             </div>
         </div>
-        
-        <!-- 分类统计 -->
-        <div class="grid grid-cols-3 gap-3 mt-4 max-w-3xl mx-auto">
-            <div class="bg-green-50 rounded-xl p-3 text-center border border-green-100">
-                <div class="text-lg font-bold text-green-600" id="signKm">0</div>
-                <div class="text-xs text-gray-500">签订</div>
-            </div>
-            <div class="bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
-                <div class="text-lg font-bold text-blue-600" id="exchangeKm">0</div>
-                <div class="text-xs text-gray-500">置换</div>
-            </div>
-            <div class="bg-purple-50 rounded-xl p-3 text-center border border-purple-100">
-                <div class="text-lg font-bold text-purple-600" id="newKm">0</div>
-                <div class="text-xs text-gray-500">新增申请</div>
-            </div>
-        </div>
-    </div>
-</section>
+    </section>
 
-<!-- 图表区域 -->
-<section id="charts" class="py-8 px-4">
-    <div class="container mx-auto max-w-4xl">
-        <!-- 切换按钮 -->
-        <div class="flex justify-center mb-6">
-            <div class="bg-white rounded-full p-1 shadow-md inline-flex">
-                <button id="btn-district" class="px-5 py-2 rounded-full text-sm font-medium transition-all bg-blue-500 text-white" onclick="switchTab('district')">
-                    <i class="fas fa-chart-bar mr-1"></i>按区县
-                </button>
-                <button id="btn-type" class="px-5 py-2 rounded-full text-sm font-medium transition-all text-gray-500 hover:bg-gray-100" onclick="switchTab('type')">
-                    <i class="fas fa-chart-pie mr-1"></i>按类型
-                </button>
+    <!-- 分类卡片 -->
+    <section class="px-4 mt-4">
+        <div class="grid grid-cols-3 gap-3">
+            <div class="flat-card p-4 text-center" onclick="switchTab('sign')">
+                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-file-signature text-green-600 text-lg"></i>
+                </div>
+                <div class="text-lg font-bold text-gray-800" id="signKm">0</div>
+                <div class="text-xs text-gray-400">签订</div>
+            </div>
+            <div class="flat-card p-4 text-center" onclick="switchTab('exchange')">
+                <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-exchange-alt text-blue-600 text-lg"></i>
+                </div>
+                <div class="text-lg font-bold text-gray-800" id="exchangeKm">0</div>
+                <div class="text-xs text-gray-400">置换</div>
+            </div>
+            <div class="flat-card p-4 text-center" onclick="switchTab('new')">
+                <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-plus-circle text-purple-600 text-lg"></i>
+                </div>
+                <div class="text-lg font-bold text-gray-800" id="newKm">0</div>
+                <div class="text-xs text-gray-400">新增</div>
             </div>
         </div>
-        
-        <!-- 图表容器 -->
-        <div class="glass p-4 shadow-lg" style="height: 400px;">
+    </section>
+
+    <!-- 图表切换 -->
+    <section class="px-4 mt-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-semibold text-gray-800">数据分布</h2>
+            <div class="flex bg-gray-100 rounded-lg p-1">
+                <button id="btn-district" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-white text-gray-800 shadow-sm" onclick="switchChart('district')">区县</button>
+                <button id="btn-type" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500" onclick="switchChart('type')">类型</button>
+            </div>
+        </div>
+        <div class="flat-card p-3" style="height: 320px;">
             <div id="chart" class="w-full h-full"></div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- 数据表格 -->
-<section id="table" class="py-8 px-4 bg-white">
-    <div class="container mx-auto max-w-4xl">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-table text-blue-500 mr-2"></i>详细数据
-        </h2>
-        <div class="glass overflow-hidden shadow-lg">
-            <div class="overflow-x-auto max-h-[450px] overflow-y-auto">
+    <!-- 数据表格 -->
+    <section class="px-4 mt-6">
+        <h2 class="text-base font-semibold text-gray-800 mb-3">详细数据</h2>
+        <div class="flat-card overflow-hidden">
+            <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                    <thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white sticky top-0">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left font-semibold">区县</th>
-                            <th class="px-4 py-3 text-right font-semibold">签订</th>
-                            <th class="px-4 py-3 text-right font-semibold">置换</th>
-                            <th class="px-4 py-3 text-right font-semibold">新增</th>
-                            <th class="px-4 py-3 text-right font-semibold">合计</th>
-                            <th class="px-4 py-3 text-right font-semibold">金额</th>
+                            <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500">区县</th>
+                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">签订</th>
+                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">置换</th>
+                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">新增</th>
+                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">合计</th>
+                            <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500">金额</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-100"></tbody>
+                    <tbody id="table-body" class="divide-y divide-gray-50"></tbody>
                 </table>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- 页脚 -->
-<footer class="bg-gray-800 text-white py-6 px-4 text-center">
-    <p class="text-gray-400 text-sm">© 2026 电信共享移动统计</p>
-    <p class="text-gray-500 text-xs mt-1">数据来源：Excel汇总</p>
-</footer>
+    <!-- 底部安全区 -->
+    <div class="h-8"></div>
+
+</main>
 
 <script>
 const data = {
+    // 合并红河县和红河为红河县: 红河县原0+红河199.81=199.81, 金额19.69
     districts: [
         {name: '蒙自', sign: 197.04, exchange: 693.27, newApply: 76.55, totalKm: 966.86, amount: 163.57},
         {name: '绿春', sign: 191.06, exchange: 187.03, newApply: 235.40, totalKm: 613.49, amount: 55.59},
@@ -154,35 +187,36 @@ const data = {
         {name: '屏边', sign: 221.61, exchange: 0, newApply: 17.10, totalKm: 238.71, amount: 3.10},
         {name: '建水', sign: 135.43, exchange: 8.52, newApply: 89.55, totalKm: 233.50, amount: 2.30},
         {name: '河口', sign: 106.72, exchange: 39.00, newApply: 157.61, totalKm: 303.33, amount: 36.95},
-        {name: '红河', sign: 199.81, exchange: 92.67, newApply: 0, totalKm: 292.48, amount: 19.69},
+        {name: '红河县', sign: 199.81, exchange: 92.67, newApply: 0, totalKm: 292.48, amount: 19.69},
         {name: '泸西', sign: 101.43, exchange: 69.50, newApply: 13.90, totalKm: 184.83, amount: 17.72},
         {name: '开远', sign: 169.61, exchange: 0, newApply: 4.01, totalKm: 173.62, amount: 0.85},
-        {name: '红河县', sign: 0, exchange: 0, newApply: 12.00, totalKm: 12.00, amount: 2.55},
+        // 汇总: 2408.42 + 1375.58 + 997.68 = 4781.68
         {name: '总计', sign: 2408.42, exchange: 1375.58, newApply: 997.68, totalKm: 4781.68, amount: 412.31}
     ],
     types: [
-        {name: '签订', km: 2408.42, color: '#52c41a'},
-        {name: '置换', km: 1375.58, color: '#1890ff'},
-        {name: '新增申请', km: 997.68, color: '#722ed1'}
+        {name: '签订', km: 2408.42, color: '#22c55e'},
+        {name: '置换', km: 1375.58, color: '#3b82f6'},
+        {name: '新增', km: 997.68, color: '#a855f7'}
     ]
 };
 
 let chart = null;
-let currentTab = 'district';
+let currentView = 'district';
 
 // 数字动画
-function animateNum(el, target) {
-    const start = 0, duration = 1200;
+function animateNum(el, target, suffix = '') {
     const startTime = performance.now();
+    const duration = 1000;
     function update(ct) {
         const p = Math.min((ct - startTime) / duration, 1);
-        el.textContent = (start + (target - start) * (1 - Math.pow(1 - p, 4))).toFixed(2);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = (target * eased).toFixed(2) + suffix;
         if (p < 1) requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
 }
 
-// 初始化数据
+// 初始化统计
 function initStats() {
     animateNum(document.getElementById('totalKm'), 4781.68);
     animateNum(document.getElementById('totalAmount'), 412.31);
@@ -196,13 +230,13 @@ function renderTable() {
     const tbody = document.getElementById('table-body');
     tbody.innerHTML = data.districts.map(d => {
         const isTotal = d.name === '总计';
-        return `<tr class="${isTotal ? 'bg-blue-50 font-bold' : 'hover:bg-gray-50'}">
-            <td class="px-4 py-3 ${isTotal ? 'text-blue-700' : 'text-gray-700'}">${d.name}</td>
-            <td class="px-4 py-3 text-right text-gray-600">${d.sign.toFixed(2)}</td>
-            <td class="px-4 py-3 text-right text-gray-600">${d.exchange.toFixed(2)}</td>
-            <td class="px-4 py-3 text-right text-gray-600">${d.newApply.toFixed(2)}</td>
-            <td class="px-4 py-3 text-right ${isTotal ? 'text-blue-700' : 'text-gray-800'}">${d.totalKm.toFixed(2)}</td>
-            <td class="px-4 py-3 text-right ${isTotal ? 'text-blue-700' : 'text-gray-800'}">${d.amount.toFixed(2)}</td>
+        return `<tr class="data-row">
+            <td class="px-3 py-2.5 ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-700'}">${d.name}</td>
+            <td class="px-3 py-2.5 text-right text-gray-500">${d.sign.toFixed(2)}</td>
+            <td class="px-3 py-2.5 text-right text-gray-500">${d.exchange.toFixed(2)}</td>
+            <td class="px-3 py-2.5 text-right text-gray-500">${d.newApply.toFixed(2)}</td>
+            <td class="px-3 py-2.5 text-right ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-800'}">${d.totalKm.toFixed(2)}</td>
+            <td class="px-3 py-2.5 text-right ${isTotal ? 'font-semibold text-blue-600' : 'text-gray-800'}">${d.amount.toFixed(2)}</td>
         </tr>`;
     }).join('');
 }
@@ -211,20 +245,47 @@ function renderTable() {
 function renderDistrictChart() {
     if (!chart) chart = echarts.init(document.getElementById('chart'));
     const districts = data.districts.filter(d => d.name !== '总计');
+    
     chart.setOption({
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-        grid: { left: '3%', right: '10%', bottom: '3%', containLabel: true },
-        xAxis: { type: 'value', axisLabel: { formatter: '{value}' } },
-        yAxis: { type: 'category', data: districts.map(d => d.name), inverse: true },
+        tooltip: { 
+            trigger: 'axis', 
+            axisPointer: { type: 'shadow' },
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            borderColor: '#e5e7eb',
+            textStyle: { color: '#374151' }
+        },
+        grid: { left: '2%', right: '12%', bottom: '2%', top: '2%', containLabel: true },
+        xAxis: { 
+            type: 'value', 
+            axisLabel: { color: '#9ca3af', fontSize: 10 },
+            splitLine: { lineStyle: { color: '#f3f4f6' } }
+        },
+        yAxis: { 
+            type: 'category', 
+            data: districts.map(d => d.name),
+            axisLabel: { color: '#6b7280', fontSize: 11 },
+            axisLine: { show: false },
+            axisTick: { show: false }
+        },
         series: [{
-            name: '公里数', type: 'bar', data: districts.map(d => d.totalKm),
+            name: '公里数', 
+            type: 'bar', 
+            data: districts.map(d => d.totalKm),
+            barWidth: '50%',
             itemStyle: {
                 color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                    { offset: 0, color: '#3b82f6' }, { offset: 1, color: '#1d4ed8' }
+                    { offset: 0, color: '#3b82f6' }, 
+                    { offset: 1, color: '#60a5fa' }
                 ]),
                 borderRadius: [0, 6, 6, 0]
             },
-            label: { show: true, position: 'right', formatter: '{c} km' }
+            label: { 
+                show: true, 
+                position: 'right', 
+                formatter: '{c}',
+                color: '#9ca3af',
+                fontSize: 10
+            }
         }]
     }, true);
 }
@@ -232,38 +293,69 @@ function renderDistrictChart() {
 // 类型饼图
 function renderTypeChart() {
     if (!chart) chart = echarts.init(document.getElementById('chart'));
+    
     chart.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: {c} km ({d}%)' },
-        legend: { orient: 'vertical', left: 'left', top: 'center' },
+        tooltip: { 
+            trigger: 'item', 
+            formatter: '{b}: {c} km ({d}%)',
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            borderColor: '#e5e7eb',
+            textStyle: { color: '#374151' }
+        },
+        legend: { 
+            orient: 'vertical', 
+            right: '5%',
+            top: 'center',
+            textStyle: { color: '#6b7280', fontSize: 12 }
+        },
         series: [{
-            name: '类型分布', type: 'pie', radius: ['40%', '70%'],
-            avoidLabelOverlap: false,
-            itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
-            label: { show: true, formatter: '{b}\n{c} km' },
-            emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
+            name: '类型分布', 
+            type: 'pie', 
+            radius: ['45%', '70%'],
+            center: ['35%', '50%'],
+            avoidLabelOverlap: true,
+            itemStyle: { 
+                borderRadius: 8, 
+                borderColor: '#fff', 
+                borderWidth: 3 
+            },
+            label: { show: false },
+            emphasis: { 
+                label: { show: true, fontSize: 14, fontWeight: 'bold' },
+                itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.2)' }
+            },
             data: data.types
         }]
     }, true);
 }
 
-// 切换标签
-function switchTab(tab) {
-    currentTab = tab;
-    document.getElementById('btn-district').className = tab === 'district' 
-        ? 'px-5 py-2 rounded-full text-sm font-medium transition-all bg-blue-500 text-white' 
-        : 'px-5 py-2 rounded-full text-sm font-medium transition-all text-gray-500 hover:bg-gray-100';
-    document.getElementById('btn-type').className = tab === 'type'
-        ? 'px-5 py-2 rounded-full text-sm font-medium transition-all bg-blue-500 text-white' 
-        : 'px-5 py-2 rounded-full text-sm font-medium transition-all text-gray-500 hover:bg-gray-100';
-    tab === 'district' ? renderDistrictChart() : renderTypeChart();
+// 切换图表
+function switchChart(view) {
+    currentView = view;
+    document.getElementById('btn-district').className = view === 'district' 
+        ? 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-white text-gray-800 shadow-sm' 
+        : 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500';
+    document.getElementById('btn-type').className = view === 'type'
+        ? 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-white text-gray-800 shadow-sm' 
+        : 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500';
+    view === 'district' ? renderDistrictChart() : renderTypeChart();
 }
+
+// 切换标签（分类卡片点击）
+function switchTab(type) {
+    const views = { 'sign': 'district', 'exchange': 'district', 'new': 'district' };
+    // 可扩展更多交互
+    console.log('切换到:', type);
+}
+
+// 窗口大小变化时重绘图表
+window.addEventListener('resize', () => chart && chart.resize());
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
     initStats();
     renderTable();
     renderDistrictChart();
-    window.addEventListener('resize', () => chart && chart.resize());
 });
 </script>
 </body>
